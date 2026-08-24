@@ -74,7 +74,7 @@ def add_item_route(list_id):
     est_price = request.form.get('estimated_price', 0)
     assigned_to = request.form.get('assigned_to')
 
-    iid, error = add_shopping_item(list_id, name, qty, est_price, assigned_to)
+    iid, error = add_shopping_item(session['user_id'], list_id, name, qty, est_price, assigned_to)
     if error:
         flash(error, 'danger')
     else:
@@ -86,14 +86,14 @@ def add_item_route(list_id):
 def toggle_item_route(list_id, item_id):
     """Toggle item purchased state."""
     act_price = request.form.get('actual_price')
-    toggle_shopping_item(item_id, act_price)
+    toggle_shopping_item(session['user_id'], list_id, item_id, act_price)
     return redirect(url_for('shopping.shopping_detail_route', list_id=list_id))
 
 @shopping_bp.route('/shopping/<int:list_id>/items/<int:item_id>/delete', methods=['POST'])
 @login_required
 def delete_item_route(list_id, item_id):
     """Delete shopping item."""
-    delete_shopping_item(item_id)
+    delete_shopping_item(session['user_id'], list_id, item_id)
     flash('Item removed.', 'info')
     return redirect(url_for('shopping.shopping_detail_route', list_id=list_id))
 

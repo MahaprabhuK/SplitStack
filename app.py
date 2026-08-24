@@ -1,6 +1,7 @@
-from flask import Flask, render_template, g, session
+from flask import Flask, render_template, g, session, request, abort
 from config import config
 from database.db import close_db, init_db
+from modules.auth.utils import get_csrf_token, validate_csrf_token
 from modules.auth.routes import auth_bp
 from modules.auth.services import get_user_by_id
 from modules.main.routes import main_bp
@@ -39,13 +40,19 @@ def create_app():
         else:
             g.user = get_user_by_id(user_id)
 
+    @app.before_request
+    def protect_state_changing_requests():
+        if request.method == 'POST' and not validate_csrf_token(request.form.get('_csrf_token')):
+            abort(400)
+
     # Context processor for templates
     @app.context_processor
     def inject_globals():
         from datetime import datetime
         return {
             'current_user': g.user,
-            'now_year': datetime.now().year
+            'now_year': datetime.now().year,
+            'csrf_token': get_csrf_token
         }
 
     # Custom Error Handlers

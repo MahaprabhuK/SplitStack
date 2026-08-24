@@ -19,6 +19,25 @@ def get_categories(user_id=None, cat_type=None):
     query += " ORDER BY (user_id IS NOT NULL), name ASC"
     return query_db(query, params)
 
+def validate_category(user_id, category_id, cat_type=None):
+    """Return an accessible category ID or a generic validation error."""
+    if category_id in (None, '', 0, '0'):
+        return None, None
+    try:
+        category_id = int(category_id)
+    except (TypeError, ValueError):
+        return None, "Invalid category selection."
+
+    query = "SELECT id FROM categories WHERE id = %s AND (user_id IS NULL OR user_id = %s)"
+    params = [category_id, user_id]
+    if cat_type:
+        query += " AND type = %s"
+        params.append(cat_type)
+    category = query_db(query, params, one=True)
+    if not category:
+        return None, "Invalid category selection."
+    return category['id'], None
+
 def add_category(user_id, name, cat_type='expense', icon='tag', color='#6366f1'):
     """Add a custom category for a user."""
     name = (name or '').strip()
@@ -100,6 +119,10 @@ def get_expense(user_id, expense_id):
 
 def add_expense(user_id, category_id, amount, description, expense_date, payment_method='upi'):
     """Add a personal expense."""
+    category_id, category_error = validate_category(user_id, category_id, 'expense')
+    if category_error:
+        return None, category_error
+
     try:
         amount = float(amount)
         if amount <= 0:
@@ -125,6 +148,10 @@ def update_expense(user_id, expense_id, category_id, amount, description, expens
     expense = get_expense(user_id, expense_id)
     if not expense:
         return False, "Expense not found or unauthorized."
+
+    category_id, category_error = validate_category(user_id, category_id, 'expense')
+    if category_error:
+        return False, category_error
 
     try:
         amount = float(amount)
@@ -188,6 +215,10 @@ def get_income(user_id, income_id):
 
 def add_income(user_id, category_id, amount, source, income_date):
     """Add income record."""
+    category_id, category_error = validate_category(user_id, category_id, 'income')
+    if category_error:
+        return None, category_error
+
     try:
         amount = float(amount)
         if amount <= 0:
@@ -213,6 +244,10 @@ def update_income(user_id, income_id, category_id, amount, source, income_date):
     inc = get_income(user_id, income_id)
     if not inc:
         return False, "Income record not found or unauthorized."
+    category_id, category_error = validate_category(user_id, category_id, 'income')
+    if category_error:
+        return False, category_error
+
     try:
         amount = float(amount)
         if amount <= 0:
@@ -318,7 +353,9 @@ def set_budget(user_id, category_id, amount, month=None, year=None):
     except (ValueError, TypeError):
         return None, "Please enter a valid budget amount."
 
-    cat_id = int(category_id) if category_id and str(category_id).isdigit() else None
+    cat_id, category_error = validate_category(user_id, category_id, 'expense')
+    if category_error:
+        return None, category_error
 
     # Upsert budget
     existing = query_db("""
@@ -361,6 +398,10 @@ def get_recurring_payments(user_id):
 
 def add_recurring_payment(user_id, category_id, name, amount, frequency, start_date, next_due_date=None):
     """Add recurring payment schedule."""
+    category_id, category_error = validate_category(user_id, category_id, 'expense')
+    if category_error:
+        return None, category_error
+
     name = (name or '').strip()
     if not name:
         return None, "Payment name is required."
@@ -379,8 +420,6 @@ def add_recurring_payment(user_id, category_id, name, amount, frequency, start_d
         start_date = datetime.now().strftime('%Y-%m-%d')
     if not next_due_date:
         next_due_date = start_date
-
-    cat_id = int(category_id) if category_id and str(category_id).isdigit() else None
 
     rid = execute_db("""
         INSERT INTO recurring_payments (user_id, category_id, name, amount, frequency, start_date, next_due_date, is_active)

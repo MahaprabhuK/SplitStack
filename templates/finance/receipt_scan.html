@@ -12,6 +12,7 @@
         </div>
 
         <form method="POST" enctype="multipart/form-data" class="auth-form" id="receiptUploadForm">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="receipt_file" class="form-label"><i class="fa-solid fa-cloud-arrow-up"></i> Select Receipt Image *</label>
                 <input type="file" id="receipt_file" name="receipt_file" class="form-control" accept="image/png, image/jpeg, image/webp" required>

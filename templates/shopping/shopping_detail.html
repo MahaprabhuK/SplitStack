@@ -16,11 +16,13 @@
         </div>
         <div class="header-actions flex-gap">
             <form action="{{ url_for('shopping.convert_expense_route', list_id=shopping_list.id) }}" method="POST" onsubmit="return confirm('Convert this shopping list total into an expense?');">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-receipt"></i> Convert to Expense
                 </button>
             </form>
             <form action="{{ url_for('shopping.delete_shopping_list_route', list_id=shopping_list.id) }}" method="POST" onsubmit="return confirm('Delete this shopping list?');">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-danger" title="Delete list"><i class="fa-solid fa-trash-can"></i></button>
             </form>
         </div>
@@ -69,6 +71,7 @@
                             <div class="item-row p-3 mb-2 glass-card flex-between {% if item.is_purchased %}item-purchased{% endif %}">
                                 <div class="flex-align-gap">
                                     <form action="{{ url_for('shopping.toggle_item_route', list_id=shopping_list.id, item_id=item.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn-check-toggle {% if item.is_purchased %}checked{% endif %}" title="Toggle Purchased">
                                             <i class="fa-solid {{ 'fa-circle-check text-emerald' if item.is_purchased else 'fa-circle text-muted' }}"></i>
                                         </button>
@@ -89,6 +92,7 @@
                                 </div>
                                 <div>
                                     <form action="{{ url_for('shopping.delete_item_route', list_id=shopping_list.id, item_id=item.id) }}" method="POST" onsubmit="return confirm('Remove item?');" style="display:inline;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                                     </form>
                                 </div>
@@ -111,6 +115,7 @@
             </div>
             <div class="card-body">
                 <form action="{{ url_for('shopping.add_item_route', list_id=shopping_list.id) }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <label class="form-label">Item Name *</label>
                         <input type="text" name="item_name" class="form-control" placeholder="e.g. Mineral Water Bottles, Potato Chips, First Aid Box" required autofocus>

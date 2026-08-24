@@ -15,6 +15,7 @@
             </div>
             <div class="card-body">
                 <form action="{{ url_for('ocr.confirm_receipt_expense') }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <label class="form-label">Merchant / Description *</label>
                         <input type="text" name="description" class="form-control" value="{{ data.merchant }}" required>

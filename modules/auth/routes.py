@@ -66,7 +66,7 @@ def login():
 
     return render_template('auth/login.html', next=next_page)
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     """User Logout Route."""
     user_name = session.get('user_name', 'User')

@@ -12,6 +12,7 @@
         </div>
 
         <form method="POST" class="auth-form" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="amount" class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> Amount (?) *</label>
                 <input type="number" step="0.01" min="0.01" id="amount" name="amount" class="form-control" placeholder="0.00" value="{{ form_data.amount or '' }}" required autofocus>

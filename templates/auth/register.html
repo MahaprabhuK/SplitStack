@@ -14,6 +14,7 @@
         </div>
 
         <form action="{{ url_for('auth.register') }}" method="POST" class="auth-form" id="registerForm" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="name" class="form-label">
                     <i class="fa-regular fa-user"></i> Full Name

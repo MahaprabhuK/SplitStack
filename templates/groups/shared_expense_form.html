@@ -12,6 +12,7 @@
         </div>
 
         <form method="POST" class="auth-form" id="sharedExpenseForm" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="title" class="form-label"><i class="fa-regular fa-comment-dots"></i> Expense Title / Description *</label>
                 <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Resort Booking, Dinner at Fisherman's Wharf, Taxi Fare" value="{{ form_data.title or '' }}" required autofocus>

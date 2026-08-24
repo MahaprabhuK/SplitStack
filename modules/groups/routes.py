@@ -111,7 +111,11 @@ def add_group_expense_route(group_id):
         title = request.form.get('title', '').strip()
         amount = request.form.get('amount')
         category_id = request.form.get('category_id')
-        paid_by = int(request.form.get('paid_by', user_id))
+        try:
+            paid_by = int(request.form.get('paid_by', user_id))
+        except (TypeError, ValueError):
+            flash('Invalid payer selection.', 'danger')
+            return render_template('groups/shared_expense_form.html', group=group, members=members, categories=categories, form_data=request.form)
         expense_date = request.form.get('expense_date')
         split_type = request.form.get('split_type', 'equal')
 
@@ -141,7 +145,7 @@ def add_group_expense_route(group_id):
                 share_amt = round((pct / total_pct * tot_amt) if total_pct > 0 else 0, 2)
                 participant_shares.append({'user_id': int(pid), 'share_amount': share_amt})
 
-        expense_id, err = add_shared_expense(group_id, paid_by, title, amount, category_id, expense_date, split_type, participant_shares)
+        expense_id, err = add_shared_expense(group_id, paid_by, title, amount, category_id, expense_date, split_type, participant_shares, user_id)
         if err:
             flash(err, 'danger')
             return render_template('groups/shared_expense_form.html', group=group, members=members, categories=categories, form_data=request.form)
@@ -194,11 +198,15 @@ def settlements_route(group_id):
 def record_settlement_route(group_id):
     """Mark a simplified settlement debt as paid."""
     user_id = session['user_id']
-    payer_id = int(request.form.get('payer_id'))
-    payee_id = int(request.form.get('payee_id'))
-    amount = float(request.form.get('amount', 0))
+    try:
+        payer_id = int(request.form.get('payer_id'))
+        payee_id = int(request.form.get('payee_id'))
+        amount = float(request.form.get('amount', 0))
+    except (TypeError, ValueError):
+        flash('Invalid settlement details.', 'danger')
+        return redirect(url_for('groups.settlements_route', group_id=group_id))
 
-    sid, error = record_settlement_payment(group_id, payer_id, payee_id, amount)
+    sid, error = record_settlement_payment(group_id, payer_id, payee_id, amount, user_id)
     if error:
         flash(error, 'danger')
     else:

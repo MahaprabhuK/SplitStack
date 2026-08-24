@@ -87,6 +87,7 @@
                                         
                                         {% if exp.paid_by == current_user_id or group.user_role == 'admin' %}
                                             <form action="{{ url_for('groups.delete_group_expense_route', group_id=group.id, expense_id=exp.id) }}" method="POST" onsubmit="return confirm('Delete this shared expense?');" style="display:inline; float:right;">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                                             </form>
                                         {% endif %}
@@ -162,6 +163,7 @@
                                     <span class="badge badge-{{ 'primary' if m.role == 'admin' else 'secondary' }} uppercase text-xs">{{ m.role }}</span>
                                     {% if group.user_role == 'admin' and m.user_id != current_user_id %}
                                         <form action="{{ url_for('groups.remove_member_route', group_id=group.id, target_user_id=m.user_id) }}" method="POST" onsubmit="return confirm('Remove member?');" style="display:inline;">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn-icon text-danger" title="Remove Member"><i class="fa-solid fa-user-minus"></i></button>
                                         </form>
                                     {% endif %}
@@ -172,6 +174,7 @@
 
                     {% if group.user_role == 'admin' %}
                         <form action="{{ url_for('groups.add_member_route', group_id=group.id) }}" method="POST" class="add-member-form pt-3 border-top">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <label class="form-label text-xs">Add Member by Registered Email:</label>
                             <div class="flex-gap">
                                 <input type="email" name="email" class="form-control form-control-sm" placeholder="friend@example.com" required>

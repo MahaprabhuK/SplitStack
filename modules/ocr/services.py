@@ -10,6 +10,18 @@ MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def valid_image_content(file, extension):
+    """Check that the uploaded bytes match the declared image type."""
+    header = file.read(12)
+    file.seek(0)
+    signatures = {
+        'png': header.startswith(b'\x89PNG\r\n\x1a\n'),
+        'jpg': header.startswith(b'\xff\xd8\xff'),
+        'jpeg': header.startswith(b'\xff\xd8\xff'),
+        'webp': header.startswith(b'RIFF') and header[8:12] == b'WEBP'
+    }
+    return signatures.get(extension, False)
+
 def parse_receipt_text(text):
     """
     Parse raw receipt text using regex to extract Merchant, Date, Total Amount.

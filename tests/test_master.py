@@ -102,7 +102,7 @@ def run_master_test():
     assert plan['simplified_count'] == 2
 
     # Settle Bob's debt
-    record_settlement_payment(gid, u2_id, u1_id, 2000.0)
+    record_settlement_payment(gid, u2_id, u1_id, 2000.0, u1_id)
     balances_settled = calculate_group_balances(gid)
     assert balances_settled[u2_id]['balance'] == 0.0
     assert balances_settled[u1_id]['balance'] == 2000.0
@@ -113,8 +113,8 @@ def run_master_test():
     # -------------------------------------------------------------
     print("\n[PHASE 4] Testing Shopping Module...")
     lid, _ = create_shopping_list(u1_id, "Office Hardware Setup", "Monitors and Keyboards", group_id=gid)
-    add_shopping_item(lid, "4K Monitor", quantity=2, estimated_price=25000.0)
-    add_shopping_item(lid, "Mechanical Keyboards", quantity=3, estimated_price=3500.0)
+    add_shopping_item(u1_id, lid, "4K Monitor", quantity=2, estimated_price=25000.0)
+    add_shopping_item(u1_id, lid, "Mechanical Keyboards", quantity=3, estimated_price=3500.0)
 
     shop_data = get_shopping_items(lid)
     assert shop_data['total_count'] == 2
@@ -169,7 +169,10 @@ Thank you!
     print("\n[PHASE 8] Testing Full HTTP Endpoints & Session Integration...")
     with client:
         # Login
-        client.post('/login', data={'email': 'alice@splitstack-master.com', 'password': 'MasterPass123!'}, follow_redirects=True)
+        client.get('/login')
+        with client.session_transaction() as flask_session:
+            csrf_token = flask_session['_csrf_token']
+        client.post('/login', data={'email': 'alice@splitstack-master.com', 'password': 'MasterPass123!', '_csrf_token': csrf_token}, follow_redirects=True)
         
         # Test navigation to all primary modules
         r_dash = client.get('/dashboard')

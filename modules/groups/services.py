@@ -1,7 +1,28 @@
 from database.db import query_db, execute_db
 from modules.groups.settlement_service import simplify_debts
+from modules.finance.services import validate_category
 from datetime import datetime
 from mysql.connector import Error
+
+def is_group_member(group_id, user_id):
+    return query_db(
+        "SELECT id FROM group_members WHERE group_id = %s AND user_id = %s",
+        (group_id, user_id), one=True
+    ) is not None
+
+def validate_group_users(group_id, user_ids):
+    """Ensure every supplied user is a member of the group."""
+    unique_ids = set(user_ids)
+    if len(unique_ids) != len(user_ids):
+        return False
+    if not unique_ids:
+        return False
+    placeholders = ','.join(['%s'] * len(unique_ids))
+    members = query_db(
+        f"SELECT user_id FROM group_members WHERE group_id = %s AND user_id IN ({placeholders})",
+        [group_id, *unique_ids]
+    )
+    return len(members) == len(unique_ids)
 
 # ----------------------------------------------------
 # Group Management
@@ -130,7 +151,7 @@ def get_group_expenses(group_id):
 
     return expenses
 
-def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, expense_date, split_type, participant_shares):
+def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, expense_date, split_type, participant_shares, current_user_id=None):
     """
     Add a shared expense with equal, unequal, or custom split calculation.
     participant_shares: list of dicts [{'user_id': int, 'share_amount': float}]
@@ -148,6 +169,14 @@ def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, e
 
     if not participant_shares or len(participant_shares) == 0:
         return None, "At least one participant must be included in the split."
+
+    participant_ids = [p.get('user_id') for p in participant_shares]
+    if not is_group_member(group_id, paid_by_id) or not validate_group_users(group_id, participant_ids):
+        return None, "All expense participants must belong to this group."
+
+    category_id, category_error = validate_category(current_user_id or paid_by_id, category_id, 'expense')
+    if category_error:
+        return None, category_error
 
     # Validate and calculate splits
     if split_type == 'equal':
@@ -171,8 +200,6 @@ def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, e
 
     if not expense_date:
         expense_date = datetime.now().strftime('%Y-%m-%d')
-
-    cat_id = int(category_id) if category_id and str(category_id).isdigit() else None
 
     # Insert shared expense record
     expense_id = execute_db("""
@@ -272,14 +299,26 @@ def get_group_settlement_plan(group_id):
         'transactions_saved': simplification['transactions_saved']
     }
 
-def record_settlement_payment(group_id, payer_id, payee_id, amount):
+def record_settlement_payment(group_id, payer_id, payee_id, amount, current_user_id=None):
     """Mark a debt settlement as completed."""
+    if current_user_id is None or not is_group_member(group_id, current_user_id):
+        return None, "You are not authorized to record settlements for this group."
+    if payer_id == payee_id or not validate_group_users(group_id, [payer_id, payee_id]):
+        return None, "Settlement payer and payee must be different group members."
+
     try:
         amount = float(amount)
         if amount <= 0:
             return None, "Settlement amount must be positive."
     except (ValueError, TypeError):
         return None, "Invalid settlement amount."
+
+    balances = calculate_group_balances(group_id)
+    payer_balance = balances[payer_id]['balance']
+    payee_balance = balances[payee_id]['balance']
+    outstanding = min(max(0.0, -payer_balance), max(0.0, payee_balance))
+    if outstanding <= 0 or amount > outstanding + 0.005:
+        return None, "Settlement amount exceeds the outstanding debt."
 
     sid = execute_db("""
         INSERT INTO settlements (group_id, payer_id, payee_id, amount, status, settled_at)

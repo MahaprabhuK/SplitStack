@@ -44,6 +44,8 @@ def create_shopping_list(user_id, title, description=None, group_id=None):
         return None, "List title is required."
 
     gid = int(group_id) if group_id and str(group_id).isdigit() else None
+    if gid and not query_db("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", (gid, user_id), one=True):
+        return None, "You must belong to the selected group."
     lid = execute_db("""
         INSERT INTO shopping_lists (user_id, group_id, title, description)
         VALUES (%s, %s, %s, %s)
@@ -84,8 +86,11 @@ def get_shopping_items(list_id):
         'purchased_count': sum(1 for i in items if i['is_purchased'])
     }
 
-def add_shopping_item(list_id, item_name, quantity=1, estimated_price=0.0, assigned_to=None):
+def add_shopping_item(user_id, list_id, item_name, quantity=1, estimated_price=0.0, assigned_to=None):
     """Add item to shopping list."""
+    shopping_list, error = get_shopping_list_details(user_id, list_id)
+    if error:
+        return None, error
     item_name = (item_name or '').strip()
     if not item_name:
         return None, "Item name is required."
@@ -93,6 +98,11 @@ def add_shopping_item(list_id, item_name, quantity=1, estimated_price=0.0, assig
     qty = max(1, int(quantity or 1))
     est_price = max(0.0, float(estimated_price or 0.0))
     assigned = int(assigned_to) if assigned_to and str(assigned_to).isdigit() else None
+    if assigned and (not shopping_list['group_id'] or not query_db(
+        "SELECT id FROM group_members WHERE group_id = %s AND user_id = %s",
+        (shopping_list['group_id'], assigned), one=True
+    )):
+        return None, "Assigned user must belong to the shopping list group."
 
     iid = execute_db("""
         INSERT INTO shopping_items (list_id, item_name, quantity, estimated_price, assigned_to)
@@ -100,9 +110,11 @@ def add_shopping_item(list_id, item_name, quantity=1, estimated_price=0.0, assig
     """, (list_id, item_name, qty, est_price, assigned))
     return iid, None
 
-def toggle_shopping_item(item_id, actual_price=None):
+def toggle_shopping_item(user_id, list_id, item_id, actual_price=None):
     """Toggle item purchased state and optionally record actual price."""
-    item = query_db("SELECT * FROM shopping_items WHERE id = %s", (item_id,), one=True)
+    if not get_shopping_list_details(user_id, list_id)[0]:
+        return False, "You do not have permission to modify this shopping list."
+    item = query_db("SELECT * FROM shopping_items WHERE id = %s AND list_id = %s", (item_id, list_id), one=True)
     if not item:
         return False, "Item not found."
 
@@ -116,7 +128,9 @@ def toggle_shopping_item(item_id, actual_price=None):
     """, (new_status, act_price, item_id))
     return True, None
 
-def delete_shopping_item(item_id):
+def delete_shopping_item(user_id, list_id, item_id):
     """Delete an item from list."""
-    execute_db("DELETE FROM shopping_items WHERE id = %s", (item_id,))
+    if not get_shopping_list_details(user_id, list_id)[0]:
+        return False, "You do not have permission to modify this shopping list."
+    execute_db("DELETE FROM shopping_items WHERE id = %s AND list_id = %s", (item_id, list_id))
     return True, None

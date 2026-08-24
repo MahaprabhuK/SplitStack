@@ -1,6 +1,23 @@
 from functools import wraps
 from flask import session, redirect, url_for, flash, request
+import hmac
 import re
+import secrets
+
+CSRF_SESSION_KEY = '_csrf_token'
+
+def get_csrf_token():
+    """Return the session-bound CSRF token used by state-changing forms."""
+    token = session.get(CSRF_SESSION_KEY)
+    if token is None:
+        token = secrets.token_urlsafe(32)
+        session[CSRF_SESSION_KEY] = token
+    return token
+
+def validate_csrf_token(token):
+    """Validate a submitted CSRF token without revealing token details."""
+    expected = session.get(CSRF_SESSION_KEY)
+    return bool(expected and token and hmac.compare_digest(expected, token))
 
 def login_required(view_func):
     """Decorator to protect routes requiring authentication."""

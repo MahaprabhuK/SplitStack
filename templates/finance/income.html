@@ -55,6 +55,7 @@
                                         <div class="flex-gap" style="justify-content: center;">
                                             <a href="{{ url_for('finance.edit_income_route', income_id=inc.id) }}" class="btn-icon text-muted" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                             <form action="{{ url_for('finance.delete_income_route', income_id=inc.id) }}" method="POST" onsubmit="return confirm('Delete this income record?');" style="display:inline;">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                                             </form>
                                         </div>

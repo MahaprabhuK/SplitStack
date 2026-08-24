@@ -29,8 +29,8 @@ def register_user(name, email, password):
             (name, email, password_hash)
         )
         return user_id, None
-    except Error as e:
-        return None, f"Database error during registration: {e}"
+    except Error:
+        return None, "Registration could not be completed. Please try again."
 
 def authenticate_user(email, password):
     """Authenticate user credentials and return user record if valid."""

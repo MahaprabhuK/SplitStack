@@ -37,11 +37,13 @@
                                 <div class="recurring-right-actions flex-align-gap">
                                     <span class="font-bold text-danger">?{{ "%.2f"|format(p.amount) }}</span>
                                     <form action="{{ url_for('finance.toggle_recurring_route', recurring_id=p.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm {{ 'btn-secondary' if p.is_active else 'btn-ghost' }}" title="Toggle Status">
                                             {{ 'Active' if p.is_active else 'Paused' }}
                                         </button>
                                     </form>
                                     <form action="{{ url_for('finance.delete_recurring_route', recurring_id=p.id) }}" method="POST" onsubmit="return confirm('Delete this recurring payment?');" style="display:inline;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
                                     </form>
                                 </div>
@@ -64,6 +66,7 @@
             </div>
             <div class="card-body">
                 <form action="{{ url_for('finance.add_recurring_route') }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <label class="form-label">Payment / Subscription Name *</label>
                         <input type="text" name="name" class="form-control" placeholder="e.g. Netflix, Wifi Bill, Rent, Gym" required>

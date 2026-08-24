@@ -5,8 +5,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'splitstack-default-secret-key-2026')
-    DEBUG = os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 't')
+    SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
+    if not SECRET_KEY or len(SECRET_KEY) < 32:
+        raise RuntimeError('FLASK_SECRET_KEY must be set to a strong secret of at least 32 characters.')
+    DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 't')
     
     # Database Configuration
     DB_HOST = os.getenv('DB_HOST', 'localhost')

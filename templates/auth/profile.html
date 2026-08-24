@@ -58,9 +58,12 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-block">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out of Session
-                    </a>
+                    <form action="{{ url_for('auth.logout') }}" method="POST">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger btn-block">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out of Session
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

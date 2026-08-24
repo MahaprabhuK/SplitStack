@@ -12,6 +12,7 @@
         </div>
 
         <form method="POST" class="auth-form" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label for="title" class="form-label"><i class="fa-solid fa-tag"></i> List Title *</label>
                 <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Trip Snacks & Drinks, Weekly Supermarket" value="{{ form_data.title or '' }}" required autofocus>

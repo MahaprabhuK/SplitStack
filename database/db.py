@@ -128,6 +128,6 @@ def init_db():
         conn.close()
         print("Database initialized successfully with schema and default seed data.")
         return True
-    except Error as e:
-        print("Error initializing database:", e)
+    except Error:
+        print("Database initialization failed. Check the configured database connection.")
         return False
