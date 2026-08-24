@@ -19,7 +19,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="theme-dark">
-    <!-- Navigation Bar -->
+    <!-- Main Navigation Bar -->
     <nav class="navbar" id="mainNavbar">
         <div class="nav-container">
             <a href="{{ url_for('main.dashboard') if current_user else url_for('auth.login') }}" class="nav-brand">
@@ -29,7 +29,7 @@
                 <span class="brand-name">Split<span>Stack</span></span>
             </a>
 
-            <!-- Mobile Menu Toggle Button -->
+            <!-- Mobile Menu Toggle -->
             <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -45,21 +45,51 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#expenses-placeholder" class="nav-link disabled-link" title="Available in Phase 2">
-                                <i class="fa-solid fa-wallet"></i>
+                            <a href="{{ url_for('finance.expenses') }}" class="nav-link {% if request.endpoint and 'finance.expenses' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-receipt"></i>
                                 <span>Expenses</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#groups-placeholder" class="nav-link disabled-link" title="Available in Phase 3">
+                            <a href="{{ url_for('finance.income') }}" class="nav-link {% if request.endpoint and 'finance.income' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-wallet"></i>
+                                <span>Income</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('finance.budgets') }}" class="nav-link {% if request.endpoint and 'finance.budgets' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Budgets</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('finance.recurring') }}" class="nav-link {% if request.endpoint and 'finance.recurring' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-rotate"></i>
+                                <span>Recurring</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('groups.groups_list') }}" class="nav-link {% if request.endpoint and 'groups' in request.endpoint %}active{% endif %}">
                                 <i class="fa-solid fa-users"></i>
                                 <span>Groups</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#shopping-placeholder" class="nav-link disabled-link" title="Available in Phase 4">
+                            <a href="{{ url_for('shopping.shopping_lists_route') }}" class="nav-link {% if request.endpoint and 'shopping' in request.endpoint %}active{% endif %}">
                                 <i class="fa-solid fa-cart-shopping"></i>
                                 <span>Shopping</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('analytics.analytics_dashboard') }}" class="nav-link {% if request.endpoint and 'analytics' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('ocr.receipt_scan') }}" class="nav-link {% if request.endpoint and 'ocr' in request.endpoint %}active{% endif %}">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>OCR</span>
                             </a>
                         </li>
                     </ul>
@@ -90,7 +120,7 @@
         </div>
     </nav>
 
-    <!-- Flash Messages Container -->
+    <!-- Flash Container -->
     <div class="flash-container" id="flashContainer">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -126,7 +156,7 @@
             <div class="footer-brand">
                 <i class="fa-solid fa-layer-group brand-icon"></i>
                 <span class="footer-title">SplitStack</span>
-                <span class="footer-version">v1.0 (Phase 1)</span>
+                <span class="footer-version">v2.0 Full Edition</span>
             </div>
             <div class="footer-copy">
                 &copy; {{ now_year }} SplitStack. Smart Financial & Expense-Sharing Platform.

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Create Group - SplitStack{% endblock %}
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card glass-card">
+        <div class="auth-header">
+            <div class="auth-icon-badge">
+                <i class="fa-solid fa-user-group"></i>
+            </div>
+            <h1 class="auth-title">Create Group</h1>
+            <p class="auth-subtitle">Set up a space for sharing and settling expenses</p>
+        </div>
+
+        <form method="POST" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="name" class="form-label"><i class="fa-solid fa-tag"></i> Group Name *</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Goa Vacation 2026, Apartment 402, Project Team" value="{{ name or '' }}" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label"><i class="fa-regular fa-comment"></i> Purpose / Description</label>
+                <textarea id="description" name="description" class="form-control" rows="3" placeholder="Optional description for group members...">{{ description or '' }}</textarea>
+            </div>
+
+            <div class="mt-4 flex-gap">
+                <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fa-solid fa-plus"></i> Create Group</button>
+                <a href="{{ url_for('groups.groups_list') }}" class="btn btn-secondary btn-block btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block title %}Dashboard - SplitStack{% endblock %}
 
 {% block content %}
@@ -9,11 +8,14 @@
         <div class="banner-content">
             <div class="banner-tag"><i class="fa-solid fa-sparkles"></i> Overview &bull; {{ stats.current_month_name }}</div>
             <h1 class="banner-title">Welcome back, {{ current_user.name }}!</h1>
-            <p class="banner-subtitle">Here is your financial status overview across personal budgets and shared groups.</p>
+            <p class="banner-subtitle">Track your personal balance, active budgets, shared groups, and predictive insights.</p>
         </div>
-        <div class="banner-actions">
-            <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
-                <i class="fa-regular fa-user"></i> View Profile
+        <div class="banner-actions flex-gap">
+            <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Add Expense
+            </a>
+            <a href="{{ url_for('ocr.receipt_scan') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-camera"></i> Scan Receipt
             </a>
         </div>
     </div>
@@ -22,12 +24,10 @@
     <div class="stats-grid">
         <!-- Net Balance Card -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-balance">
-                <i class="fa-solid fa-scale-balanced"></i>
-            </div>
+            <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-scale-balanced"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Net Balance (Monthly)</span>
-                <h2 class="stat-value {% if stats.net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                <h2 class="stat-value {% if stats.net_balance >= 0 %}text-emerald{% else %}text-danger{% endif %}">
                     ?{{ "%.2f"|format(stats.net_balance) }}
                 </h2>
                 <span class="stat-hint">Income vs Expenses</span>
@@ -36,116 +36,181 @@
 
         <!-- Total Income Card -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-income">
-                <i class="fa-solid fa-arrow-trend-up"></i>
-            </div>
+            <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-arrow-trend-up"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Monthly Income</span>
-                <h2 class="stat-value text-emerald">
-                    ?{{ "%.2f"|format(stats.total_income) }}
-                </h2>
+                <h2 class="stat-value text-emerald">?{{ "%.2f"|format(stats.total_income) }}</h2>
                 <span class="stat-hint">{{ stats.current_month_name }}</span>
             </div>
         </div>
 
         <!-- Total Expenses Card -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-expense">
-                <i class="fa-solid fa-arrow-trend-down"></i>
-            </div>
+            <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Monthly Expenses</span>
-                <h2 class="stat-value text-indigo">
-                    ?{{ "%.2f"|format(stats.total_expenses) }}
-                </h2>
+                <h2 class="stat-value text-danger">?{{ "%.2f"|format(stats.total_expenses) }}</h2>
                 <span class="stat-hint">{{ stats.current_month_name }}</span>
             </div>
         </div>
 
         <!-- Active Groups Card -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-groups">
-                <i class="fa-solid fa-users-rectangle"></i>
-            </div>
+            <div class="stat-icon-wrap icon-groups"><i class="fa-solid fa-users-rectangle"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Active Groups</span>
-                <h2 class="stat-value text-amber">
-                    {{ stats.group_count }}
-                </h2>
+                <h2 class="stat-value text-amber">{{ stats.group_count }}</h2>
                 <span class="stat-hint">Shared expense groups</span>
             </div>
         </div>
     </div>
 
-    <!-- Phase 1 System Ready Status & Quick Action Overview -->
-    <div class="dashboard-grid-sections">
+    <!-- Smart Insights & Predictive ML Section -->
+    <div class="grid-2-col mb-4">
+        <!-- Smart Financial Insights -->
         <div class="card glass-card">
             <div class="card-header flex-between">
-                <h2 class="card-title"><i class="fa-solid fa-circle-nodes"></i> Platform Modules & Roadmap</h2>
-                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Phase 1 Active</span>
+                <h2 class="card-title"><i class="fa-solid fa-lightbulb text-amber"></i> Smart Financial Insights</h2>
+                <span class="badge badge-primary">Live Data</span>
             </div>
             <div class="card-body">
-                <div class="modules-roadmap-list">
-                    <div class="roadmap-item completed">
-                        <div class="roadmap-icon"><i class="fa-solid fa-shield-check"></i></div>
-                        <div class="roadmap-text">
-                            <h4>Phase 1: Foundation & Authentication</h4>
-                            <p>MySQL schema, Flask modular blueprints, secure user session management & password hashing.</p>
-                        </div>
-                        <span class="roadmap-tag tag-ready">Ready</span>
+                {% if insights %}
+                    <div class="insights-list">
+                        {% for ins in insights %}
+                            <div class="insight-card-item p-3 mb-2 glass-card flex-align-gap border-left-{{ ins.color }}">
+                                <div class="cat-icon-circle bg-{{ ins.color }} text-{{ ins.color }}">
+                                    <i class="fa-solid fa-{{ ins.icon }}"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">{{ ins.title }}</h4>
+                                    <p class="text-xs text-muted">{{ ins.message }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-
-                    <div class="roadmap-item upcoming">
-                        <div class="roadmap-icon"><i class="fa-solid fa-coins"></i></div>
-                        <div class="roadmap-text">
-                            <h4>Phase 2: Personal Finance & Budgets</h4>
-                            <p>Categorized expenses, income tracking, monthly budgets with progress bars, recurring payments.</p>
-                        </div>
-                        <span class="roadmap-tag tag-next">Next Phase</span>
+                {% else %}
+                    <div class="empty-state text-center p-3">
+                        <i class="fa-solid fa-sparkles empty-icon"></i>
+                        <p class="text-sm text-muted">Log your daily expenses and income to generate smart insights automatically.</p>
                     </div>
-
-                    <div class="roadmap-item pending">
-                        <div class="roadmap-icon"><i class="fa-solid fa-people-arrows"></i></div>
-                        <div class="roadmap-text">
-                            <h4>Phase 3: Group Finance & Debt Simplification</h4>
-                            <p>Shared expenses, equal/unequal splitting, and minimum transaction debt settlement algorithm.</p>
-                        </div>
-                        <span class="roadmap-tag tag-queue">Queued</span>
-                    </div>
-
-                    <div class="roadmap-item pending">
-                        <div class="roadmap-icon"><i class="fa-solid fa-basket-shopping"></i></div>
-                        <div class="roadmap-text">
-                            <h4>Phase 4: Shopping Lists & OCR Receipt Scanner</h4>
-                            <p>Collaborative shopping items, estimated vs actual pricing, OCR receipt data extraction.</p>
-                        </div>
-                        <span class="roadmap-tag tag-queue">Queued</span>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
 
+        <!-- Predictive Spending Forecast (ML) -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-brain text-indigo"></i> ML Spending Forecast</h2>
+                <span class="badge badge-secondary text-xs">{{ prediction.confidence }}</span>
+            </div>
+            <div class="card-body">
+                <div class="prediction-box p-3 glass-card mb-3">
+                    {% if prediction.has_sufficient_data %}
+                        <div class="flex-between mb-2">
+                            <span class="text-muted text-sm">Projected Month-End Spend:</span>
+                            <span class="font-bold text-danger text-lg">?{{ "%.2f"|format(prediction.projected_total) }}</span>
+                        </div>
+                        <div class="flex-between text-xs text-muted mb-2">
+                            <span>Daily Velocity: ?{{ "%.2f"|format(prediction.daily_average) }}/day</span>
+                            <span>Remaining Days: {{ prediction.days_remaining }}</span>
+                        </div>
+                        <p class="text-xs text-dim italic">{{ prediction.message }}</p>
+                    {% else %}
+                        <div class="empty-state text-center p-2">
+                            <i class="fa-solid fa-chart-line empty-icon text-muted"></i>
+                            <p class="text-xs text-muted">{{ prediction.message }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if budget_risks %}
+                    <div class="budget-risks-wrap">
+                        <span class="text-xs font-semibold text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Budget Risk Alerts:</span>
+                        {% for r in budget_risks %}
+                            <div class="text-xs text-muted mt-1">&bull; <strong>{{ r.category }}</strong>: {{ r.description }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Recent Transactions Grid -->
+    <div class="grid-2-col">
+        <!-- Recent Transactions -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Transactions</h2>
+                <a href="{{ url_for('finance.expenses') }}" class="btn btn-ghost btn-sm text-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_expenses %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exp in recent_expenses %}
+                                    <tr>
+                                        <td class="text-xs">{{ exp.expense_date.strftime('%d %b') if exp.expense_date else 'N/A' }}</td>
+                                        <td class="font-medium">{{ exp.description or 'Expense' }}</td>
+                                        <td>
+                                            <span class="category-badge text-xs" style="background-color: {{ exp.category_color or '#6366f1' }}22; color: {{ exp.category_color or '#818cf8' }};">
+                                                <i class="fa-solid fa-{{ exp.category_icon or 'tag' }}"></i> {{ exp.category_name or 'General' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-4">
+                        <i class="fa-solid fa-receipt empty-icon"></i>
+                        <p>No recent transactions recorded.</p>
+                        <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary btn-sm mt-2">Log Expense</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Platform Actions -->
         <div class="card glass-card">
             <div class="card-header">
                 <h2 class="card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</h2>
             </div>
             <div class="card-body quick-actions-container">
-                <a href="{{ url_for('auth.profile') }}" class="action-btn">
-                    <i class="fa-solid fa-user-circle"></i>
-                    <span>My Account Profile</span>
+                <a href="{{ url_for('finance.add_expense_route') }}" class="action-btn">
+                    <i class="fa-solid fa-plus-circle text-danger"></i>
+                    <span>Log Personal Expense</span>
                 </a>
-                <button class="action-btn disabled-btn" title="Coming in Phase 2">
-                    <i class="fa-solid fa-plus-circle"></i>
-                    <span>Add Expense (Phase 2)</span>
-                </button>
-                <button class="action-btn disabled-btn" title="Coming in Phase 2">
-                    <i class="fa-solid fa-money-bill-trend-up"></i>
-                    <span>Log Income (Phase 2)</span>
-                </button>
-                <button class="action-btn disabled-btn" title="Coming in Phase 3">
-                    <i class="fa-solid fa-user-group"></i>
-                    <span>Create Group (Phase 3)</span>
-                </button>
+                <a href="{{ url_for('finance.add_income_route') }}" class="action-btn">
+                    <i class="fa-solid fa-wallet text-emerald"></i>
+                    <span>Record Income / Salary</span>
+                </a>
+                <a href="{{ url_for('groups.create_group_route') }}" class="action-btn">
+                    <i class="fa-solid fa-user-group text-primary"></i>
+                    <span>Create Expense Group</span>
+                </a>
+                <a href="{{ url_for('shopping.create_shopping_list_route') }}" class="action-btn">
+                    <i class="fa-solid fa-cart-plus text-amber"></i>
+                    <span>New Shopping Checklist</span>
+                </a>
+                <a href="{{ url_for('ocr.receipt_scan') }}" class="action-btn">
+                    <i class="fa-solid fa-camera text-indigo"></i>
+                    <span>Scan Receipt with OCR</span>
+                </a>
+                <a href="{{ url_for('analytics.analytics_dashboard') }}" class="action-btn">
+                    <i class="fa-solid fa-chart-pie text-cyan"></i>
+                    <span>Open Analytics Dashboard</span>
+                </a>
             </div>
         </div>
     </div>

@@ -4,22 +4,33 @@ from database.db import close_db, init_db
 from modules.auth.routes import auth_bp
 from modules.auth.services import get_user_by_id
 from modules.main.routes import main_bp
+from modules.finance.routes import finance_bp
+from modules.groups.routes import groups_bp
+from modules.shopping.routes import shopping_bp
+from modules.analytics.routes import analytics_bp
+from modules.ocr.routes import ocr_bp
 import os
 
 def create_app():
-    """Application Factory."""
+    """SplitStack Flask Application Factory."""
     app = Flask(__name__)
     app.config['SECRET_KEY'] = config.SECRET_KEY
     app.config['DEBUG'] = config.DEBUG
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 5MB Upload Limit
 
-    # Register blueprints
+    # Register all modular blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(finance_bp)
+    app.register_blueprint(groups_bp)
+    app.register_blueprint(shopping_bp)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(ocr_bp)
 
-    # Register database teardown
+    # Register database teardown hook
     app.teardown_appcontext(close_db)
 
-    # Load authenticated user on each request
+    # Load logged-in user into g.user on each request
     @app.before_request
     def load_logged_in_user():
         user_id = session.get('user_id')
@@ -28,7 +39,7 @@ def create_app():
         else:
             g.user = get_user_by_id(user_id)
 
-    # Context processor for templates (injects user and current year)
+    # Context processor for templates
     @app.context_processor
     def inject_globals():
         from datetime import datetime
@@ -37,7 +48,7 @@ def create_app():
             'now_year': datetime.now().year
         }
 
-    # Error Handlers
+    # Custom Error Handlers
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('errors/404.html'), 404
@@ -48,11 +59,9 @@ def create_app():
 
     return app
 
-# Main entrypoint
 app = create_app()
 
 if __name__ == '__main__':
-    # Initialize DB on first run
     init_db()
-    print(f" * SplitStack running on http://127.0.0.1:5000 (Debug: {config.DEBUG})")
+    print(f" * SplitStack server running on http://127.0.0.1:5000 (Debug: {config.DEBUG})")
     app.run(host='0.0.0.0', port=5000, debug=config.DEBUG)

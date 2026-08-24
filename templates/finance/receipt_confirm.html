@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Scanned Receipt - SplitStack{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header mb-4">
+        <h1 class="page-title"><i class="fa-solid fa-clipboard-check"></i> Review Extracted Receipt Data</h1>
+        <p class="text-muted">Review, edit if needed, and confirm to record this expense</p>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Extracted Form -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-pen-to-square"></i> Confirm Expense Details</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('ocr.confirm_receipt_expense') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Merchant / Description *</label>
+                        <input type="text" name="description" class="form-control" value="{{ data.merchant }}" required>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Detected Amount (?) *</label>
+                            <input type="number" step="0.01" min="0.01" name="amount" class="form-control font-bold" value="{{ data.total_amount }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Receipt Date *</label>
+                            <input type="date" name="expense_date" class="form-control" value="{{ data.receipt_date }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select name="category_id" class="form-control">
+                                <option value="">-- Select Category --</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Payment Method</label>
+                            <select name="payment_method" class="form-control">
+                                <option value="upi" selected>UPI</option>
+                                <option value="card">Card</option>
+                                <option value="cash">Cash</option>
+                                <option value="net_banking">Net Banking</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex-gap">
+                        <button type="submit" class="btn btn-primary btn-block btn-lg">
+                            <i class="fa-solid fa-check"></i> Confirm & Save Expense
+                        </button>
+                        <a href="{{ url_for('ocr.receipt_scan') }}" class="btn btn-secondary btn-block btn-lg">Re-Scan</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Receipt Image Preview & Raw OCR Text -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-image"></i> Scanned Receipt Preview</h2>
+                <span class="badge badge-primary">{{ data.ocr_engine }}</span>
+            </div>
+            <div class="card-body">
+                <div class="receipt-preview-wrap mb-3 text-center">
+                    <img src="{{ image_url }}" alt="Scanned Receipt" style="max-height: 250px; max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                </div>
+                <div class="raw-ocr-text-wrap">
+                    <label class="form-label text-xs">Raw Extracted Text:</label>
+                    <pre class="raw-ocr-box p-2 glass-card text-xs text-muted" style="max-height: 140px; overflow-y: auto; white-space: pre-wrap;">{{ data.raw_text }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

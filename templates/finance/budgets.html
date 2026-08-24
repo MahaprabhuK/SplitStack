@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Budget Management - SplitStack{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header flex-between mb-4">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-sliders"></i> Monthly Budgets</h1>
+            <p class="text-muted">Set spending targets, track live limits, and avoid overspending</p>
+        </div>
+        <div class="header-actions">
+            <span class="badge badge-primary"><i class="fa-regular fa-calendar"></i> {{ month_name }}</span>
+        </div>
+    </div>
+
+    <!-- Overall Metrics -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-bullseye"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Total Monthly Target</span>
+                <h2 class="stat-value text-indigo">?{{ "%.2f"|format(total_budget) }}</h2>
+                <span class="stat-hint">Active category budgets</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Actual Spent</span>
+                <h2 class="stat-value text-danger">?{{ "%.2f"|format(total_spent) }}</h2>
+                <span class="stat-hint">{{ month_name }}</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Remaining Buffer</span>
+                <h2 class="stat-value {% if (total_budget - total_spent) >= 0 %}text-emerald{% else %}text-danger{% endif %}">
+                    ?{{ "%.2f"|format(total_budget - total_spent) }}
+                </h2>
+                <span class="stat-hint">Available before budget breach</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Budgets List Column -->
+        <div class="budgets-list-column">
+            {% if budgets %}
+                <div class="budget-cards-grid">
+                    {% for b in budgets %}
+                        <div class="card glass-card budget-item-card mb-3 status-{{ b.status }}">
+                            <div class="card-header flex-between">
+                                <div class="flex-align-gap">
+                                    <div class="cat-icon-circle" style="background: {{ b.category_color or '#6366f1' }}22; color: {{ b.category_color or '#818cf8' }};">
+                                        <i class="fa-solid fa-{{ b.category_icon or 'tag' }}"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="budget-cat-name">{{ b.category_name or 'Overall Monthly Limit' }}</h3>
+                                        <span class="text-xs text-muted">Target: ?{{ "%.2f"|format(b.budget_limit) }}</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-{{ 'danger' if b.status in ('danger', 'warning') else ('warning' if b.status == 'caution' else 'success') }}">
+                                    {{ b.status_text }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="budget-progress-bar-wrap">
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill fill-{{ b.status }}" style="width: {{ b.percent }}%;"></div>
+                                    </div>
+                                    <div class="progress-meta flex-between text-xs mt-2">
+                                        <span class="text-muted">Spent: ?{{ "%.2f"|format(b.spent) }} ({{ b.actual_percent }}%)</span>
+                                        <span class="font-semibold {% if b.remaining >= 0 %}text-emerald{% else %}text-danger{% endif %}">
+                                            {{ "Remaining: ?%.2f"|format(b.remaining) if b.remaining >= 0 else "Over by ?%.2f"|format(b.remaining|abs) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="budget-card-actions mt-3 text-right">
+                                    <form action="{{ url_for('finance.delete_budget_route', budget_id=b.id) }}" method="POST" onsubmit="return confirm('Delete this budget?');" style="display:inline;">
+                                        <button type="submit" class="btn btn-ghost btn-sm text-danger"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card glass-card text-center p-5">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-sliders empty-icon"></i>
+                        <p>No budgets configured for {{ month_name }}.</p>
+                        <p class="text-sm text-muted">Use the form to set category limits.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Set Budget Form -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-plus"></i> Set Category Budget</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('finance.set_budget_route') }}" method="POST">
+                    <input type="hidden" name="month" value="{{ month }}">
+                    <input type="hidden" name="year" value="{{ year }}">
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-tag"></i> Category</label>
+                        <select name="category_id" class="form-control" required>
+                            <option value="">-- Overall Monthly Limit --</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> Budget Limit (?) *</label>
+                        <input type="number" step="0.01" min="1" name="amount" class="form-control" placeholder="e.g. 5000.00" required>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fa-solid fa-circle-info"></i> Automatically notifies when spending crosses <strong>75%</strong>, <strong>90%</strong>, and <strong>100%</strong>.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-check"></i> Set Budget Target
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

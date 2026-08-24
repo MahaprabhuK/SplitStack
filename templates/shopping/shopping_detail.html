@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}{{ shopping_list.title }} - SplitStack{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header flex-between mb-4">
+        <div>
+            <div class="flex-align-gap mb-1">
+                <h1 class="page-title">{{ shopping_list.title }}</h1>
+                {% if shopping_list.group_name %}
+                    <span class="badge badge-primary"><i class="fa-solid fa-users"></i> {{ shopping_list.group_name }}</span>
+                {% else %}
+                    <span class="badge badge-secondary"><i class="fa-solid fa-user"></i> Personal</span>
+                {% endif %}
+            </div>
+            <p class="text-muted">{{ shopping_list.description or 'Item checklist and price tracker.' }}</p>
+        </div>
+        <div class="header-actions flex-gap">
+            <form action="{{ url_for('shopping.convert_expense_route', list_id=shopping_list.id) }}" method="POST" onsubmit="return confirm('Convert this shopping list total into an expense?');">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-receipt"></i> Convert to Expense
+                </button>
+            </form>
+            <form action="{{ url_for('shopping.delete_shopping_list_route', list_id=shopping_list.id) }}" method="POST" onsubmit="return confirm('Delete this shopping list?');">
+                <button type="submit" class="btn btn-outline-danger" title="Delete list"><i class="fa-solid fa-trash-can"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Financial Pricing Summary Metrics -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-calculator"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Estimated Total</span>
+                <h2 class="stat-value text-indigo">?{{ "%.2f"|format(estimated_total) }}</h2>
+                <span class="stat-hint">Sum of (Qty &times; Estimated Price)</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-cart-arrow-down"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Actual Total (Purchased)</span>
+                <h2 class="stat-value text-emerald">?{{ "%.2f"|format(actual_total) }}</h2>
+                <span class="stat-hint">{{ purchased_count }} of {{ total_count }} items purchased</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-scale-balanced"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Difference / Variance</span>
+                <h2 class="stat-value {% if difference <= 0 %}text-emerald{% else %}text-danger{% endif %}">
+                    {{ "?+%.2f (Over)"|format(difference) if difference > 0 else "?%.2f (Under/Match)"|format(difference) }}
+                </h2>
+                <span class="stat-hint">Actual vs Estimated</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Shopping Items Checklist -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-clipboard-check"></i> Checklist ({{ purchased_count }}/{{ total_count }})</h2>
+            </div>
+            <div class="card-body">
+                {% if items %}
+                    <div class="items-checklist">
+                        {% for item in items %}
+                            <div class="item-row p-3 mb-2 glass-card flex-between {% if item.is_purchased %}item-purchased{% endif %}">
+                                <div class="flex-align-gap">
+                                    <form action="{{ url_for('shopping.toggle_item_route', list_id=shopping_list.id, item_id=item.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn-check-toggle {% if item.is_purchased %}checked{% endif %}" title="Toggle Purchased">
+                                            <i class="fa-solid {{ 'fa-circle-check text-emerald' if item.is_purchased else 'fa-circle text-muted' }}"></i>
+                                        </button>
+                                    </form>
+                                    <div>
+                                        <div class="font-bold item-title">{{ item.item_name }}</div>
+                                        <span class="text-xs text-muted">
+                                            Qty: <strong>{{ item.quantity }}</strong> &bull; 
+                                            Est: ?{{ "%.2f"|format(item.estimated_price) }}
+                                            {% if item.actual_price is not none %}
+                                                &bull; <span class="text-emerald">Actual: ?{{ "%.2f"|format(item.actual_price) }}</span>
+                                            {% endif %}
+                                            {% if item.assigned_name %}
+                                                &bull; <span class="text-primary">Assigned: {{ item.assigned_name }}</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <form action="{{ url_for('shopping.delete_item_route', list_id=shopping_list.id, item_id=item.id) }}" method="POST" onsubmit="return confirm('Remove item?');" style="display:inline;">
+                                        <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-4">
+                        <i class="fa-solid fa-basket-shopping empty-icon"></i>
+                        <p>No items added to this list yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Add Item Form -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-plus-circle"></i> Add Item</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('shopping.add_item_route', list_id=shopping_list.id) }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Item Name *</label>
+                        <input type="text" name="item_name" class="form-control" placeholder="e.g. Mineral Water Bottles, Potato Chips, First Aid Box" required autofocus>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" min="1" name="quantity" class="form-control" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estimated Price per Unit (?)</label>
+                            <input type="number" step="0.01" min="0" name="estimated_price" class="form-control" placeholder="0.00" value="0.00">
+                        </div>
+                    </div>
+
+                    {% if members %}
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-user"></i> Assign to Member (Optional)</label>
+                            <select name="assigned_to" class="form-control">
+                                <option value="">-- Unassigned --</option>
+                                {% for m in members %}
+                                    <option value="{{ m.user_id }}">{{ m.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-plus"></i> Add Item to List
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

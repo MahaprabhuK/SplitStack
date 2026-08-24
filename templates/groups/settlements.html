@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Settlements & Debt Simplification - {{ group.name }}{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header flex-between mb-4">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Debt Simplification Algorithm</h1>
+            <p class="text-muted">Minimum transaction settlement plan for <strong>{{ group.name }}</strong></p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('groups.group_detail_route', group_id=group.id) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Back to Group
+            </a>
+        </div>
+    </div>
+
+    <!-- Optimization Efficiency Cards -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Original Pairwise Debts</span>
+                <h2 class="stat-value text-danger">{{ original_debts }}</h2>
+                <span class="stat-hint">Unsimplified transactions</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Optimized Transactions</span>
+                <h2 class="stat-value text-emerald">{{ simplified_debts }}</h2>
+                <span class="stat-hint">Minimum required transactions</span>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-trophy"></i></div>
+            <div class="stat-meta">
+                <span class="stat-label">Transactions Saved</span>
+                <h2 class="stat-value text-indigo">{{ saved_debts }}</h2>
+                <span class="stat-hint">Optimization efficiency</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Simplified Transactions Plan -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-list-check"></i> Recommended Settlement Transactions</h2>
+                <span class="badge badge-success">{{ simplified_debts }} Pending</span>
+            </div>
+            <div class="card-body">
+                {% if simplified_settlements %}
+                    <div class="settlements-plan-list">
+                        {% for s in simplified_settlements %}
+                            <div class="settlement-card-row p-3 mb-3 glass-card flex-between">
+                                <div class="flex-align-gap">
+                                    <div class="avatar-circle">{{ s.payer_name[0]|upper }}</div>
+                                    <div>
+                                        <div class="font-bold text-sm">
+                                            <span class="text-danger">{{ s.payer_name }}</span>
+                                            <i class="fa-solid fa-arrow-right mx-2 text-dim"></i>
+                                            <span class="text-emerald">{{ s.receiver_name }}</span>
+                                        </div>
+                                        <span class="text-xs text-muted">Amount to settle: <strong>?{{ "%.2f"|format(s.amount) }}</strong></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <form action="{{ url_for('groups.record_settlement_route', group_id=group.id) }}" method="POST">
+                                        <input type="hidden" name="payer_id" value="{{ s.payer_id }}">
+                                        <input type="hidden" name="payee_id" value="{{ s.receiver_id }}">
+                                        <input type="hidden" name="amount" value="{{ s.amount }}">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fa-solid fa-check"></i> Mark Paid
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-4">
+                        <i class="fa-solid fa-circle-check text-success empty-icon"></i>
+                        <h3 class="font-bold">All Debts are Fully Settled!</h3>
+                        <p class="text-muted text-sm">Everyone in this group has a zero net balance.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Historical Completed Settlements -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Settlement History</h2>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                    <div class="history-list">
+                        {% for h in history %}
+                            <div class="history-row p-2 mb-2 glass-card flex-between text-sm">
+                                <div>
+                                    <div class="font-medium">
+                                        <strong>{{ h.payer_name }}</strong> paid <strong>{{ h.payee_name }}</strong>
+                                    </div>
+                                    <span class="text-xs text-muted">{{ h.settled_at.strftime('%d %b %Y, %I:%M %p') if h.settled_at else 'Completed' }}</span>
+                                </div>
+                                <div class="font-bold text-emerald">
+                                    ?{{ "%.2f"|format(h.amount) }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-4">
+                        <i class="fa-solid fa-receipt empty-icon"></i>
+                        <p class="text-muted text-sm">No settlements recorded yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

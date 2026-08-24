@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Create Shopping List - SplitStack{% endblock %}
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card glass-card">
+        <div class="auth-header">
+            <div class="auth-icon-badge">
+                <i class="fa-solid fa-cart-plus"></i>
+            </div>
+            <h1 class="auth-title">New Shopping List</h1>
+            <p class="auth-subtitle">Create a shared or personal shopping list</p>
+        </div>
+
+        <form method="POST" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="title" class="form-label"><i class="fa-solid fa-tag"></i> List Title *</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Trip Snacks & Drinks, Weekly Supermarket" value="{{ form_data.title or '' }}" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label"><i class="fa-regular fa-comment"></i> Notes / Description</label>
+                <textarea id="description" name="description" class="form-control" rows="2" placeholder="Optional notes for this list...">{{ form_data.description or '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="group_id" class="form-label"><i class="fa-solid fa-users"></i> Associate with Group (Optional)</label>
+                <select id="group_id" name="group_id" class="form-control">
+                    <option value="">-- Personal Shopping List --</option>
+                    {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mt-4 flex-gap">
+                <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fa-solid fa-check"></i> Create List</button>
+                <a href="{{ url_for('shopping.shopping_lists_route') }}" class="btn btn-secondary btn-block btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

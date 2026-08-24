@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Manage Categories - SplitStack{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header mb-4">
+        <h1 class="page-title"><i class="fa-solid fa-tags"></i> Categories Management</h1>
+        <p class="text-muted">Manage system default and custom expense/income tags</p>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Active Categories -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-list-check"></i> Active Categories</h2>
+            </div>
+            <div class="card-body">
+                <div class="categories-tag-grid">
+                    {% for cat in categories %}
+                        <div class="category-item-card">
+                            <div class="cat-pill" style="border-left: 4px solid {{ cat.color }};">
+                                <div class="cat-icon-circle" style="background: {{ cat.color }}22; color: {{ cat.color }};">
+                                    <i class="fa-solid fa-{{ cat.icon }}"></i>
+                                </div>
+                                <div class="cat-details">
+                                    <span class="cat-name">{{ cat.name }}</span>
+                                    <span class="cat-type-label text-dim text-xs uppercase">{{ cat.type }} &bull; {{ 'Custom' if cat.user_id else 'System Default' }}</span>
+                                </div>
+                                {% if cat.user_id %}
+                                    <form action="{{ url_for('finance.delete_category_route', category_id=cat.id) }}" method="POST" onsubmit="return confirm('Delete custom category?');" class="cat-delete-form">
+                                        <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-xmark"></i></button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Custom Category -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-plus-circle"></i> Create Custom Category</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('finance.add_category_route') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Category Name *</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Pet Care, Gaming, Gym" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category Type</label>
+                        <select name="type" class="form-control">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            <select name="icon" class="form-control">
+                                <option value="tag">Tag</option>
+                                <option value="paw">Paw / Pets</option>
+                                <option value="gamepad">Gaming</option>
+                                <option value="dumbbell">Gym</option>
+                                <option value="gift">Gifts</option>
+                                <option value="house">Housing</option>
+                                <option value="coffee">Coffee</option>
+                                <option value="book">Books</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Accent Color</label>
+                            <input type="color" name="color" class="form-control form-control-color" value="#6366f1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-plus"></i> Add Category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Groups - SplitStack{% endblock %}
+{% block content %}
+<div class="container page-content">
+    <div class="page-header flex-between mb-4">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-users"></i> Shared Expense Groups</h1>
+            <p class="text-muted">Split expenses effortlessly for trips, households, friends, projects, and events</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('groups.create_group_route') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Create Group
+            </a>
+        </div>
+    </div>
+
+    {% if groups %}
+        <div class="stats-grid">
+            {% for g in groups %}
+                <div class="card glass-card group-card-item">
+                    <div class="card-header flex-between">
+                        <div class="flex-align-gap">
+                            <div class="brand-logo-icon">
+                                <i class="fa-solid fa-users-rectangle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">{{ g.name }}</h3>
+                                <span class="text-xs text-muted">Role: <span class="badge badge-secondary uppercase">{{ g.role }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted text-sm mb-3">{{ g.description or 'No description provided.' }}</p>
+                        
+                        <div class="group-stats-row flex-between text-sm p-2 mb-3 glass-card">
+                            <div>
+                                <span class="text-muted block text-xs">Members</span>
+                                <span class="font-bold"><i class="fa-solid fa-user-group text-primary"></i> {{ g.member_count }}</span>
+                            </div>
+                            <div>
+                                <span class="text-muted block text-xs">Total Spent</span>
+                                <span class="font-bold text-danger">?{{ "%.2f"|format(g.total_spent) }}</span>
+                            </div>
+                        </div>
+
+                        <a href="{{ url_for('groups.group_detail_route', group_id=g.id) }}" class="btn btn-secondary btn-block">
+                            <i class="fa-solid fa-arrow-right"></i> Open Group
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card glass-card text-center p-5">
+            <div class="empty-state">
+                <i class="fa-solid fa-people-group empty-icon"></i>
+                <h2 class="font-bold mb-2">No Groups Found</h2>
+                <p class="text-muted mb-4">Create a group to start sharing expenses with friends, roommates, or team members.</p>
+                <a href="{{ url_for('groups.create_group_route') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Create Your First Group
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

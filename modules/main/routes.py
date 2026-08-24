@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, session, g
 from modules.auth.utils import login_required
 from database.db import query_db
+from modules.finance.services import get_expenses
+from modules.analytics.insights_service import generate_smart_insights
+from ml.spending_predictor import predict_monthly_spending, assess_budget_risk
 from datetime import datetime
 
 main_bp = Blueprint('main', __name__, template_folder='../../templates')
@@ -15,39 +18,44 @@ def index():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Main Financial Dashboard."""
+    """Comprehensive main financial dashboard."""
     user_id = session['user_id']
     now = datetime.now()
     current_month = now.month
     current_year = now.year
 
-    # Phase 1: Retrieve basic stats or defaults
-    # Monthly Income
-    income_res = query_db(
-        "SELECT COALESCE(SUM(amount), 0) AS total FROM income WHERE user_id = %s AND MONTH(income_date) = %s AND YEAR(income_date) = %s",
-        (user_id, current_month, current_year),
-        one=True
-    )
+    # 1. Income (Current Month)
+    income_res = query_db("""
+        SELECT COALESCE(SUM(amount), 0) AS total 
+        FROM income 
+        WHERE user_id = %s AND MONTH(income_date) = %s AND YEAR(income_date) = %s
+    """, (user_id, current_month, current_year), one=True)
     total_income = float(income_res['total']) if income_res else 0.0
 
-    # Monthly Personal Expense
-    expense_res = query_db(
-        "SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s",
-        (user_id, current_month, current_year),
-        one=True
-    )
+    # 2. Expenses (Current Month)
+    expense_res = query_db("""
+        SELECT COALESCE(SUM(amount), 0) AS total 
+        FROM expenses 
+        WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+    """, (user_id, current_month, current_year), one=True)
     total_expenses = float(expense_res['total']) if expense_res else 0.0
 
-    # Net Balance
+    # 3. Net Balance
     net_balance = total_income - total_expenses
 
-    # Group counts
-    group_count_res = query_db(
-        "SELECT COUNT(*) AS count FROM group_members WHERE user_id = %s",
-        (user_id,),
-        one=True
-    )
+    # 4. Group Memberships & Count
+    group_count_res = query_db("SELECT COUNT(*) AS count FROM group_members WHERE user_id = %s", (user_id,), one=True)
     group_count = group_count_res['count'] if group_count_res else 0
+
+    # 5. Recent Transactions (Last 5)
+    recent_expenses = get_expenses(user_id=user_id, sort='date_desc')[:5]
+
+    # 6. Smart Financial Insights
+    insights = generate_smart_insights(user_id)
+
+    # 7. ML Spending Prediction
+    spending_prediction = predict_monthly_spending(user_id)
+    budget_risks = assess_budget_risk(user_id)
 
     stats = {
         'total_income': total_income,
@@ -57,4 +65,11 @@ def dashboard():
         'current_month_name': now.strftime('%B %Y')
     }
 
-    return render_template('dashboard.html', stats=stats)
+    return render_template(
+        'dashboard.html',
+        stats=stats,
+        recent_expenses=recent_expenses,
+        insights=insights,
+        prediction=spending_prediction,
+        budget_risks=budget_risks
+    )

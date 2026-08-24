@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit Income' if is_edit else 'Add Income' }} - SplitStack{% endblock %}
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card glass-card">
+        <div class="auth-header">
+            <div class="auth-icon-badge">
+                <i class="fa-solid {{ 'fa-pen-to-square' if is_edit else 'fa-wallet' }}"></i>
+            </div>
+            <h1 class="auth-title">{{ 'Edit Income' if is_edit else 'Record New Income' }}</h1>
+            <p class="auth-subtitle">Add earnings to your SplitStack balance</p>
+        </div>
+
+        <form method="POST" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="amount" class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> Amount (?) *</label>
+                <input type="number" step="0.01" min="0.01" id="amount" name="amount" class="form-control" placeholder="0.00" value="{{ form_data.amount or '' }}" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="source" class="form-label"><i class="fa-solid fa-building"></i> Income Source / Payer *</label>
+                <input type="text" id="source" name="source" class="form-control" placeholder="e.g. Salary, Freelance project, Dividend" value="{{ form_data.source or '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category_id" class="form-label"><i class="fa-solid fa-tag"></i> Category</label>
+                <select id="category_id" name="category_id" class="form-control">
+                    <option value="">-- Select Category --</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if (form_data.category_id|string) == (cat.id|string) %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="income_date" class="form-label"><i class="fa-regular fa-calendar"></i> Date Received *</label>
+                <input type="date" id="income_date" name="income_date" class="form-control" value="{{ form_data.income_date or '' }}" required>
+            </div>
+
+            <div class="mt-4 flex-gap">
+                <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="fa-solid fa-check"></i> {{ 'Save Changes' if is_edit else 'Record Income' }}</button>
+                <a href="{{ url_for('finance.income') }}" class="btn btn-secondary btn-block btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
