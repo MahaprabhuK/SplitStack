@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found (404) - SplitStack{% endblock %}
+
+{% block content %}
+<div class="error-page-container">
+    <div class="error-card glass-card">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-desc">The page or resource you are looking for might have been moved, deleted, or does not exist.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('main.dashboard') if current_user else url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-house"></i> Return to Homepage
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

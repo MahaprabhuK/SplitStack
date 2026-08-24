@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SplitStack{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+    <!-- Welcome Greeting Section -->
+    <div class="dashboard-banner glass-card">
+        <div class="banner-content">
+            <div class="banner-tag"><i class="fa-solid fa-sparkles"></i> Overview &bull; {{ stats.current_month_name }}</div>
+            <h1 class="banner-title">Welcome back, {{ current_user.name }}!</h1>
+            <p class="banner-subtitle">Here is your financial status overview across personal budgets and shared groups.</p>
+        </div>
+        <div class="banner-actions">
+            <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
+                <i class="fa-regular fa-user"></i> View Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Metric Cards -->
+    <div class="stats-grid">
+        <!-- Net Balance Card -->
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-balance">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Net Balance (Monthly)</span>
+                <h2 class="stat-value {% if stats.net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    ?{{ "%.2f"|format(stats.net_balance) }}
+                </h2>
+                <span class="stat-hint">Income vs Expenses</span>
+            </div>
+        </div>
+
+        <!-- Total Income Card -->
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-income">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Monthly Income</span>
+                <h2 class="stat-value text-emerald">
+                    ?{{ "%.2f"|format(stats.total_income) }}
+                </h2>
+                <span class="stat-hint">{{ stats.current_month_name }}</span>
+            </div>
+        </div>
+
+        <!-- Total Expenses Card -->
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-expense">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Monthly Expenses</span>
+                <h2 class="stat-value text-indigo">
+                    ?{{ "%.2f"|format(stats.total_expenses) }}
+                </h2>
+                <span class="stat-hint">{{ stats.current_month_name }}</span>
+            </div>
+        </div>
+
+        <!-- Active Groups Card -->
+        <div class="stat-card glass-card">
+            <div class="stat-icon-wrap icon-groups">
+                <i class="fa-solid fa-users-rectangle"></i>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Active Groups</span>
+                <h2 class="stat-value text-amber">
+                    {{ stats.group_count }}
+                </h2>
+                <span class="stat-hint">Shared expense groups</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 1 System Ready Status & Quick Action Overview -->
+    <div class="dashboard-grid-sections">
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-circle-nodes"></i> Platform Modules & Roadmap</h2>
+                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Phase 1 Active</span>
+            </div>
+            <div class="card-body">
+                <div class="modules-roadmap-list">
+                    <div class="roadmap-item completed">
+                        <div class="roadmap-icon"><i class="fa-solid fa-shield-check"></i></div>
+                        <div class="roadmap-text">
+                            <h4>Phase 1: Foundation & Authentication</h4>
+                            <p>MySQL schema, Flask modular blueprints, secure user session management & password hashing.</p>
+                        </div>
+                        <span class="roadmap-tag tag-ready">Ready</span>
+                    </div>
+
+                    <div class="roadmap-item upcoming">
+                        <div class="roadmap-icon"><i class="fa-solid fa-coins"></i></div>
+                        <div class="roadmap-text">
+                            <h4>Phase 2: Personal Finance & Budgets</h4>
+                            <p>Categorized expenses, income tracking, monthly budgets with progress bars, recurring payments.</p>
+                        </div>
+                        <span class="roadmap-tag tag-next">Next Phase</span>
+                    </div>
+
+                    <div class="roadmap-item pending">
+                        <div class="roadmap-icon"><i class="fa-solid fa-people-arrows"></i></div>
+                        <div class="roadmap-text">
+                            <h4>Phase 3: Group Finance & Debt Simplification</h4>
+                            <p>Shared expenses, equal/unequal splitting, and minimum transaction debt settlement algorithm.</p>
+                        </div>
+                        <span class="roadmap-tag tag-queue">Queued</span>
+                    </div>
+
+                    <div class="roadmap-item pending">
+                        <div class="roadmap-icon"><i class="fa-solid fa-basket-shopping"></i></div>
+                        <div class="roadmap-text">
+                            <h4>Phase 4: Shopping Lists & OCR Receipt Scanner</h4>
+                            <p>Collaborative shopping items, estimated vs actual pricing, OCR receipt data extraction.</p>
+                        </div>
+                        <span class="roadmap-tag tag-queue">Queued</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</h2>
+            </div>
+            <div class="card-body quick-actions-container">
+                <a href="{{ url_for('auth.profile') }}" class="action-btn">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span>My Account Profile</span>
+                </a>
+                <button class="action-btn disabled-btn" title="Coming in Phase 2">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Add Expense (Phase 2)</span>
+                </button>
+                <button class="action-btn disabled-btn" title="Coming in Phase 2">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                    <span>Log Income (Phase 2)</span>
+                </button>
+                <button class="action-btn disabled-btn" title="Coming in Phase 3">
+                    <i class="fa-solid fa-user-group"></i>
+                    <span>Create Group (Phase 3)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

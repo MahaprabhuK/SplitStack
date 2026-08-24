@@ -1,0 +1,43 @@
+from functools import wraps
+from flask import session, redirect, url_for, flash, request
+import re
+
+def login_required(view_func):
+    """Decorator to protect routes requiring authentication."""
+    @wraps(view_func)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('auth.login', next=request.path))
+        return view_func(*args, **kwargs)
+    return decorated_function
+
+def validate_registration(name, email, password, confirm_password):
+    """Validate user registration inputs."""
+    errors = []
+    
+    name = (name or '').strip()
+    email = (email or '').strip()
+    password = password or ''
+    confirm_password = confirm_password or ''
+
+    if not name:
+        errors.append('Full name is required.')
+    elif len(name) < 2 or len(name) > 100:
+        errors.append('Name must be between 2 and 100 characters.')
+
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not email:
+        errors.append('Email address is required.')
+    elif not re.match(email_regex, email):
+        errors.append('Please provide a valid email address.')
+
+    if not password:
+        errors.append('Password is required.')
+    elif len(password) < 6:
+        errors.append('Password must be at least 6 characters long.')
+
+    if password != confirm_password:
+        errors.append('Passwords do not match.')
+
+    return errors

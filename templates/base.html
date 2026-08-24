@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SplitStack - Smart Personal & Group Expense Management, Debt Simplification, and Financial Insights">
+    <title>{% block title %}SplitStack - Smart Financial Management{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="theme-dark">
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="mainNavbar">
+        <div class="nav-container">
+            <a href="{{ url_for('main.dashboard') if current_user else url_for('auth.login') }}" class="nav-brand">
+                <div class="brand-logo-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <span class="brand-name">Split<span>Stack</span></span>
+            </a>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="nav-menu" id="navMenu">
+                {% if current_user %}
+                    <ul class="nav-links">
+                        <li>
+                            <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                                <i class="fa-solid fa-chart-pie"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#expenses-placeholder" class="nav-link disabled-link" title="Available in Phase 2">
+                                <i class="fa-solid fa-wallet"></i>
+                                <span>Expenses</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#groups-placeholder" class="nav-link disabled-link" title="Available in Phase 3">
+                                <i class="fa-solid fa-users"></i>
+                                <span>Groups</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#shopping-placeholder" class="nav-link disabled-link" title="Available in Phase 4">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span>Shopping</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="nav-user-section">
+                        <a href="{{ url_for('auth.profile') }}" class="user-profile-btn" title="View Profile">
+                            <div class="avatar-circle">
+                                {{ current_user.name[0]|upper }}
+                            </div>
+                            <span class="user-name">{{ current_user.name }}</span>
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm" id="logoutBtn">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="nav-auth-buttons">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-ghost {% if request.endpoint == 'auth.login' %}active{% endif %}" id="navLoginBtn">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" id="navRegisterBtn">
+                            <i class="fa-solid fa-user-plus"></i> Get Started
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages Container -->
+    <div class="flash-container" id="flashContainer">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} fade-in" role="alert">
+                        <div class="alert-icon">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% elif category == 'danger' or category == 'error' %}
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info"></i>
+                            {% endif %}
+                        </div>
+                        <div class="alert-text">{{ message }}</div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <i class="fa-solid fa-layer-group brand-icon"></i>
+                <span class="footer-title">SplitStack</span>
+                <span class="footer-version">v1.0 (Phase 1)</span>
+            </div>
+            <div class="footer-copy">
+                &copy; {{ now_year }} SplitStack. Smart Financial & Expense-Sharing Platform.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - SplitStack{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+    <div class="profile-header-card glass-card">
+        <div class="profile-avatar-large">
+            {{ user.name[0]|upper }}
+        </div>
+        <div class="profile-info-main">
+            <h1 class="profile-name">{{ user.name }}</h1>
+            <p class="profile-email"><i class="fa-regular fa-envelope"></i> {{ user.email }}</p>
+            <div class="profile-badges">
+                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Active User</span>
+                <span class="badge badge-primary"><i class="fa-solid fa-id-badge"></i> User ID #{{ user.id }}</span>
+                <span class="badge badge-secondary"><i class="fa-regular fa-calendar"></i> Member Since {{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'Recent' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-user-gear"></i> Account Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="detail-row">
+                    <span class="detail-label">Full Name</span>
+                    <span class="detail-value">{{ user.name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email Address</span>
+                    <span class="detail-value">{{ user.email }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Authentication Method</span>
+                    <span class="detail-value">Password (PBKDF2 SHA-256 Hashed)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Created</span>
+                    <span class="detail-value">{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-shield-check"></i> Security & Sessions</h2>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Your passwords are encrypted using secure salted cryptographic hashes and never stored in plain-text.</p>
+                <div class="security-status-box">
+                    <div class="security-icon"><i class="fa-solid fa-lock"></i></div>
+                    <div>
+                        <div class="font-semibold">Secure Session Active</div>
+                        <div class="text-sm text-muted">Connected to MySQL SplitStack Database</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-block">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out of Session
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

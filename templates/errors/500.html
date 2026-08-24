@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Internal Server Error (500) - SplitStack{% endblock %}
+
+{% block content %}
+<div class="error-page-container">
+    <div class="error-card glass-card">
+        <div class="error-code text-danger">500</div>
+        <h1 class="error-title">Internal Server Error</h1>
+        <p class="error-desc">Something unexpected happened on our server while processing your request. Please try again.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('main.dashboard') if current_user else url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-rotate-right"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
