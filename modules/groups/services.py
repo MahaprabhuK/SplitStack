@@ -1,12 +1,12 @@
-from database.db import query_db, execute_db
+from database.db import query_db, execute_db, transaction
 from modules.groups.settlement_service import simplify_debts
 from modules.finance.services import validate_category
 from datetime import datetime
-from mysql.connector import Error
+import sqlite3
 
 def is_group_member(group_id, user_id):
     return query_db(
-        "SELECT id FROM group_members WHERE group_id = %s AND user_id = %s",
+        "SELECT id FROM group_members WHERE group_id = ? AND user_id = ?",
         (group_id, user_id), one=True
     ) is not None
 
@@ -17,9 +17,9 @@ def validate_group_users(group_id, user_ids):
         return False
     if not unique_ids:
         return False
-    placeholders = ','.join(['%s'] * len(unique_ids))
+    placeholders = ','.join(['?'] * len(unique_ids))
     members = query_db(
-        f"SELECT user_id FROM group_members WHERE group_id = %s AND user_id IN ({placeholders})",
+        f"SELECT user_id FROM group_members WHERE group_id = ? AND user_id IN ({placeholders})",
         [group_id, *unique_ids]
     )
     return len(members) == len(unique_ids)
@@ -34,26 +34,26 @@ def get_user_groups(user_id):
                gm.role, u.name AS creator_name,
                (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count,
                (SELECT COALESCE(SUM(amount), 0) FROM shared_expenses WHERE group_id = g.id) AS total_spent
-        FROM `groups` g
+        FROM "groups" g
         JOIN group_members gm ON g.id = gm.group_id
         JOIN users u ON g.created_by = u.id
-        WHERE gm.user_id = %s
+        WHERE gm.user_id = ?
         ORDER BY g.created_at DESC
     """, (user_id,))
 
 def get_group_details(user_id, group_id):
     """Get group details if user is an authorized member."""
     membership = query_db("""
-        SELECT role FROM group_members WHERE group_id = %s AND user_id = %s
+        SELECT role FROM group_members WHERE group_id = ? AND user_id = ?
     """, (group_id, user_id), one=True)
     if not membership:
         return None, "You are not a member of this group."
 
     group_data = query_db("""
         SELECT g.*, u.name AS creator_name
-        FROM `groups` g
+        FROM "groups" g
         JOIN users u ON g.created_by = u.id
-        WHERE g.id = %s
+        WHERE g.id = ?
     """, (group_id,), one=True)
     group_data['user_role'] = membership['role']
     return group_data, None
@@ -64,16 +64,19 @@ def create_group(creator_id, name, description=None):
     if not name:
         return None, "Group name is required."
 
-    group_id = execute_db("""
-        INSERT INTO `groups` (name, description, created_by)
-        VALUES (%s, %s, %s)
-    """, (name, description or '', creator_id))
+    try:
+        with transaction():
+            group_id = execute_db("""
+                INSERT INTO "groups" (name, description, created_by)
+                VALUES (?, ?, ?)
+            """, (name, description or '', creator_id), commit=False)
 
-    # Add creator as admin member
-    execute_db("""
-        INSERT INTO group_members (group_id, user_id, role)
-        VALUES (%s, %s, 'admin')
-    """, (group_id, creator_id))
+            execute_db("""
+                INSERT INTO group_members (group_id, user_id, role)
+                VALUES (?, ?, 'admin')
+            """, (group_id, creator_id), commit=False)
+    except sqlite3.Error:
+        return None, "Group could not be created. Please try again."
 
     return group_id, None
 
@@ -84,30 +87,30 @@ def get_group_members(group_id):
                u.name, u.email
         FROM group_members gm
         JOIN users u ON gm.user_id = u.id
-        WHERE gm.group_id = %s
+        WHERE gm.group_id = ?
         ORDER BY gm.role ASC, u.name ASC
     """, (group_id,))
 
 def add_group_member_by_email(group_id, admin_user_id, member_email):
     """Add a registered user to the group by email address."""
     # Verify admin
-    admin = query_db("SELECT role FROM group_members WHERE group_id = %s AND user_id = %s", (group_id, admin_user_id), one=True)
+    admin = query_db("SELECT role FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, admin_user_id), one=True)
     if not admin or admin['role'] != 'admin':
         return False, "Only group admins can add new members."
 
     member_email = (member_email or '').strip().lower()
-    user_to_add = query_db("SELECT id, name FROM users WHERE email = %s", (member_email,), one=True)
+    user_to_add = query_db("SELECT id, name FROM users WHERE email = ?", (member_email,), one=True)
     if not user_to_add:
         return False, f"No user found with email '{member_email}'. They must register first."
 
     # Check if already a member
-    already = query_db("SELECT id FROM group_members WHERE group_id = %s AND user_id = %s", (group_id, user_to_add['id']), one=True)
+    already = query_db("SELECT id FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, user_to_add['id']), one=True)
     if already:
         return False, f"{user_to_add['name']} is already a member of this group."
 
     execute_db("""
         INSERT INTO group_members (group_id, user_id, role)
-        VALUES (%s, %s, 'member')
+        VALUES (?, ?, 'member')
     """, (group_id, user_to_add['id']))
 
     return True, f"{user_to_add['name']} has been added to the group."
@@ -117,11 +120,11 @@ def remove_group_member(group_id, admin_user_id, target_user_id):
     if admin_user_id == target_user_id:
         return False, "You cannot remove yourself. Use Leave Group instead."
 
-    admin = query_db("SELECT role FROM group_members WHERE group_id = %s AND user_id = %s", (group_id, admin_user_id), one=True)
+    admin = query_db("SELECT role FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, admin_user_id), one=True)
     if not admin or admin['role'] != 'admin':
         return False, "Only group admins can remove members."
 
-    execute_db("DELETE FROM group_members WHERE group_id = %s AND user_id = %s", (group_id, target_user_id))
+    execute_db("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, target_user_id))
     return True, None
 
 # ----------------------------------------------------
@@ -135,7 +138,7 @@ def get_group_expenses(group_id):
         FROM shared_expenses se
         JOIN users u ON se.paid_by = u.id
         LEFT JOIN categories c ON se.category_id = c.id
-        WHERE se.group_id = %s
+        WHERE se.group_id = ?
         ORDER BY se.expense_date DESC, se.id DESC
     """, (group_id,))
 
@@ -145,7 +148,7 @@ def get_group_expenses(group_id):
             SELECT ep.user_id, ep.share_amount, u.name
             FROM expense_participants ep
             JOIN users u ON ep.user_id = u.id
-            WHERE ep.shared_expense_id = %s
+            WHERE ep.shared_expense_id = ?
         """, (exp['id'],))
         exp['participants'] = participants
 
@@ -201,32 +204,34 @@ def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, e
     if not expense_date:
         expense_date = datetime.now().strftime('%Y-%m-%d')
 
-    # Insert shared expense record
-    expense_id = execute_db("""
-        INSERT INTO shared_expenses (group_id, paid_by, category_id, title, amount, split_type, expense_date)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, (group_id, paid_by_id, cat_id, title, total_amount, split_type, expense_date))
+    try:
+        with transaction():
+            expense_id = execute_db("""
+                INSERT INTO shared_expenses (group_id, paid_by, category_id, title, amount, split_type, expense_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (group_id, paid_by_id, category_id, title, total_amount, split_type, expense_date), commit=False)
 
-    # Insert participants
-    for p in participant_shares:
-        execute_db("""
-            INSERT INTO expense_participants (shared_expense_id, user_id, share_amount)
-            VALUES (%s, %s, %s)
-        """, (expense_id, p['user_id'], p['share_amount']))
+            for p in participant_shares:
+                execute_db("""
+                    INSERT INTO expense_participants (shared_expense_id, user_id, share_amount)
+                    VALUES (?, ?, ?)
+                """, (expense_id, p['user_id'], p['share_amount']), commit=False)
+    except sqlite3.Error:
+        return None, "Shared expense could not be saved. Please try again."
 
     return expense_id, None
 
 def delete_shared_expense(group_id, user_id, expense_id):
     """Delete a shared expense if user paid it or is an admin."""
-    exp = query_db("SELECT * FROM shared_expenses WHERE id = %s AND group_id = %s", (expense_id, group_id), one=True)
+    exp = query_db("SELECT * FROM shared_expenses WHERE id = ? AND group_id = ?", (expense_id, group_id), one=True)
     if not exp:
         return False, "Expense not found."
     
-    admin = query_db("SELECT role FROM group_members WHERE group_id = %s AND user_id = %s", (group_id, user_id), one=True)
+    admin = query_db("SELECT role FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, user_id), one=True)
     if exp['paid_by'] != user_id and (not admin or admin['role'] != 'admin'):
         return False, "You do not have permission to delete this expense."
 
-    execute_db("DELETE FROM shared_expenses WHERE id = %s", (expense_id,))
+    execute_db("DELETE FROM shared_expenses WHERE id = ?", (expense_id,))
     return True, None
 
 # ----------------------------------------------------
@@ -245,7 +250,7 @@ def calculate_group_balances(group_id):
     paid_rows = query_db("""
         SELECT paid_by, COALESCE(SUM(amount), 0) AS total_paid
         FROM shared_expenses
-        WHERE group_id = %s
+        WHERE group_id = ?
         GROUP BY paid_by
     """, (group_id,))
     for r in paid_rows:
@@ -257,7 +262,7 @@ def calculate_group_balances(group_id):
         SELECT ep.user_id, COALESCE(SUM(ep.share_amount), 0) AS total_owed
         FROM expense_participants ep
         JOIN shared_expenses se ON ep.shared_expense_id = se.id
-        WHERE se.group_id = %s
+        WHERE se.group_id = ?
         GROUP BY ep.user_id
     """, (group_id,))
     for r in owed_rows:
@@ -268,7 +273,7 @@ def calculate_group_balances(group_id):
     completed_settlements = query_db("""
         SELECT payer_id, payee_id, COALESCE(SUM(amount), 0) AS total_amount
         FROM settlements
-        WHERE group_id = %s AND status = 'completed'
+        WHERE group_id = ? AND status = 'completed'
         GROUP BY payer_id, payee_id
     """, (group_id,))
     for s in completed_settlements:
@@ -320,10 +325,14 @@ def record_settlement_payment(group_id, payer_id, payee_id, amount, current_user
     if outstanding <= 0 or amount > outstanding + 0.005:
         return None, "Settlement amount exceeds the outstanding debt."
 
-    sid = execute_db("""
-        INSERT INTO settlements (group_id, payer_id, payee_id, amount, status, settled_at)
-        VALUES (%s, %s, %s, %s, 'completed', NOW())
-    """, (group_id, payer_id, payee_id, amount))
+    try:
+        with transaction():
+            sid = execute_db("""
+                INSERT INTO settlements (group_id, payer_id, payee_id, amount, status, settled_at)
+                VALUES (?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP)
+            """, (group_id, payer_id, payee_id, amount), commit=False)
+    except sqlite3.Error:
+        return None, "Settlement could not be recorded. Please try again."
     return sid, None
 
 def get_settlement_history(group_id):
@@ -333,6 +342,6 @@ def get_settlement_history(group_id):
         FROM settlements s
         JOIN users u1 ON s.payer_id = u1.id
         JOIN users u2 ON s.payee_id = u2.id
-        WHERE s.group_id = %s
+        WHERE s.group_id = ?
         ORDER BY s.settled_at DESC, s.id DESC
     """, (group_id,))

@@ -29,7 +29,7 @@ def dashboard():
     income_res = query_db("""
         SELECT COALESCE(SUM(amount), 0) AS total 
         FROM income 
-        WHERE user_id = %s AND MONTH(income_date) = %s AND YEAR(income_date) = %s
+        WHERE user_id = ? AND CAST(strftime('%m', income_date) AS INTEGER) = ? AND CAST(strftime('%Y', income_date) AS INTEGER) = ?
     """, (user_id, current_month, current_year), one=True)
     total_income = float(income_res['total']) if income_res else 0.0
 
@@ -37,7 +37,7 @@ def dashboard():
     expense_res = query_db("""
         SELECT COALESCE(SUM(amount), 0) AS total 
         FROM expenses 
-        WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+        WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?
     """, (user_id, current_month, current_year), one=True)
     total_expenses = float(expense_res['total']) if expense_res else 0.0
 

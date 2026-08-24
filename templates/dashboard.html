@@ -12,7 +12,7 @@
     <div class="dashboard-banner mb-4">
         <div>
             <div class="banner-tag"><i class="fa-solid fa-sparkles"></i> Overview &bull; {{ stats.current_month_name }}</div>
-            <h1 class="banner-title">Welcome back, {{ current_user.name }}!</h1>
+            <h1 class="banner-title"><span id="welcomeGreeting">Welcome back</span>, {{ current_user.name }}!</h1>
             <p class="banner-subtitle">Here is your comprehensive financial summary for {{ stats.current_month_name }}. Track spending, budgets, group debts, and ML insights.</p>
         </div>
         <div class="flex-gap">
@@ -253,7 +253,7 @@
     </div>
 
     <!-- 6. Smart Insights, ML Forecasting, & Quick Actions -->
-    <div class="grid-8-4">
+    <div class="grid-8-4" id="insights">
         <!-- Smart Insights & Predictive ML -->
         <div class="card glass-card">
             <div class="card-header flex-between">

@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 def get_analytics_overview(user_id):
     """Compile overall financial metrics for user."""
     # Lifetime Income
-    inc_row = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM income WHERE user_id = %s", (user_id,), one=True)
+    inc_row = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM income WHERE user_id = ?", (user_id,), one=True)
     total_income = float(inc_row['total']) if inc_row else 0.0
 
     # Lifetime Personal Expenses
-    exp_row = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = %s", (user_id,), one=True)
+    exp_row = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = ?", (user_id,), one=True)
     total_expenses = float(exp_row['total']) if exp_row else 0.0
 
     # Shared Group Owed/Share
@@ -16,7 +16,7 @@ def get_analytics_overview(user_id):
         SELECT COALESCE(SUM(ep.share_amount), 0) AS total_group_share
         FROM expense_participants ep
         JOIN shared_expenses se ON ep.shared_expense_id = se.id
-        WHERE ep.user_id = %s
+        WHERE ep.user_id = ?
     """, (user_id,), one=True)
     total_group_spending = float(grp_row['total_group_share']) if grp_row else 0.0
 
@@ -44,7 +44,7 @@ def get_category_breakdown(user_id, month=None, year=None):
                COALESCE(SUM(e.amount), 0) AS total_amount
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = %s AND MONTH(e.expense_date) = %s AND YEAR(e.expense_date) = %s
+        WHERE e.user_id = ? AND CAST(strftime('%m', e.expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', e.expense_date) AS INTEGER) = ?
         GROUP BY c.name, c.color, c.icon
         ORDER BY total_amount DESC
     """, (user_id, month, year))
@@ -83,7 +83,7 @@ def get_monthly_trend(user_id, months_count=6):
         inc_row = query_db("""
             SELECT COALESCE(SUM(amount), 0) AS total
             FROM income
-            WHERE user_id = %s AND MONTH(income_date) = %s AND YEAR(income_date) = %s
+            WHERE user_id = ? AND CAST(strftime('%m', income_date) AS INTEGER) = ? AND CAST(strftime('%Y', income_date) AS INTEGER) = ?
         """, (user_id, target_month, target_year), one=True)
         inc = float(inc_row['total']) if inc_row else 0.0
 
@@ -91,7 +91,7 @@ def get_monthly_trend(user_id, months_count=6):
         exp_row = query_db("""
             SELECT COALESCE(SUM(amount), 0) AS total
             FROM expenses
-            WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+            WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?
         """, (user_id, target_month, target_year), one=True)
         exp = float(exp_row['total']) if exp_row else 0.0
 

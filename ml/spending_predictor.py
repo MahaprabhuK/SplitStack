@@ -17,7 +17,7 @@ def predict_monthly_spending(user_id):
     curr_spent_row = query_db("""
         SELECT COUNT(*) AS tx_count, COALESCE(SUM(amount), 0) AS total_spent
         FROM expenses
-        WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+        WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?
     """, (user_id, month, year), one=True)
 
     tx_count = curr_spent_row['tx_count'] if curr_spent_row else 0
@@ -58,7 +58,7 @@ def assess_budget_risk(user_id):
         SELECT b.amount AS limit_amount, COALESCE(c.name, 'Overall') AS category_name
         FROM budgets b
         LEFT JOIN categories c ON b.category_id = c.id
-        WHERE b.user_id = %s AND b.month = %s AND b.year = %s
+        WHERE b.user_id = ? AND b.month = ? AND b.year = ?
     """, (user_id, now.month, now.year))
 
     risks = []

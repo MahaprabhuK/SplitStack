@@ -3,6 +3,13 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import unittest
 from decimal import Decimal
+
+from config import config
+test_database_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'database', 'test_splitstack.db'))
+if os.path.exists(test_database_path):
+    os.remove(test_database_path)
+config.DATABASE_PATH = test_database_path
+
 from app import create_app
 from database.db import query_db, execute_db, init_db
 from modules.auth.services import register_user, authenticate_user

@@ -41,7 +41,7 @@ def receipt_scan():
             # Save in receipts table
             receipt_id = execute_db("""
                 INSERT INTO receipts (user_id, image_path, merchant, total_amount, receipt_date, raw_ocr_text, status)
-                VALUES (%s, %s, %s, %s, %s, %s, 'scanned')
+                VALUES (?, ?, ?, ?, ?, ?, 'scanned')
             """, (user_id, os.path.relpath(save_path, current_app.root_path), parsed_data['merchant'], parsed_data['total_amount'], parsed_data['receipt_date'], parsed_data['raw_text']))
 
             flash(f"Receipt scanned with {parsed_data['ocr_engine']}! Please verify and confirm before saving.", 'success')
@@ -60,7 +60,7 @@ def receipt_scan():
 @login_required
 def receipt_image(receipt_id):
     receipt = query_db(
-        "SELECT image_path FROM receipts WHERE id = %s AND user_id = %s",
+        "SELECT image_path FROM receipts WHERE id = ? AND user_id = ?",
         (receipt_id, session['user_id']), one=True
     )
     if not receipt:

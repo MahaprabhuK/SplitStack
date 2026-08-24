@@ -6,6 +6,7 @@ from modules.shopping.services import (
 )
 from modules.groups.services import get_user_groups, get_group_members, add_shared_expense
 from modules.finance.services import add_expense, get_categories
+from database.db import transaction
 from datetime import datetime
 
 shopping_bp = Blueprint('shopping', __name__, template_folder='../../templates')
@@ -126,7 +127,8 @@ def convert_expense_route(list_id):
         return redirect(url_for('groups.group_detail_route', group_id=sl['group_id']))
     else:
         # Convert to personal expense
-        add_expense(user_id, None, amount_to_convert, title, today_str, 'upi')
+        with transaction():
+            add_expense(user_id, None, amount_to_convert, title, today_str, 'upi', commit=False)
         flash(f'Converted ?{amount_to_convert:.2f} to personal expenses!', 'success')
         return redirect(url_for('finance.expenses'))
 

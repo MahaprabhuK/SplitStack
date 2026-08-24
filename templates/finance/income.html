@@ -18,17 +18,17 @@
     <div class="stat-card glass-card mb-4 flex-between" style="flex-direction: row; align-items: center;">
         <div>
             <span class="stat-label">Total Recorded Income</span>
-            <div class="stat-value text-emerald">?{{ "%.2f"|format(total_income) }}</div>
+                <div class="stat-value text-emerald">?{{ "%.2f"|format(total_amount) }}</div>
         </div>
         <div>
-            <span class="badge badge-success">{{ income_list|length }} record(s)</span>
+                    <span class="badge badge-success">{{ incomes|length }} record(s)</span>
         </div>
     </div>
 
     <!-- Income Table -->
     <div class="card glass-card">
         <div class="card-body p-0">
-            {% if income_list %}
+            {% if incomes %}
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
@@ -41,7 +41,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for inc in income_list %}
+                            {% for inc in incomes %}
                                 <tr>
                                     <td class="text-muted text-sm font-medium">{{ inc.income_date.strftime('%d %b %Y') if inc.income_date else 'N/A' }}</td>
                                     <td class="font-bold">{{ inc.source or 'Income' }}</td>

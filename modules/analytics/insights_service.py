@@ -14,8 +14,8 @@ def generate_smart_insights(user_id):
     prev_y = curr_y - 1 if curr_m == 1 else curr_y
 
     # 1. Month-over-Month Personal Spending Comparison
-    curr_exp = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s", (user_id, curr_m, curr_y), one=True)
-    prev_exp = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s", (user_id, prev_m, prev_y), one=True)
+    curr_exp = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?", (user_id, curr_m, curr_y), one=True)
+    prev_exp = query_db("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?", (user_id, prev_m, prev_y), one=True)
 
     c_total = float(curr_exp['total']) if curr_exp else 0.0
     p_total = float(prev_exp['total']) if prev_exp else 0.0
@@ -44,7 +44,7 @@ def generate_smart_insights(user_id):
         SELECT c.name, SUM(e.amount) AS total
         FROM expenses e
         JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = %s AND MONTH(e.expense_date) = %s AND YEAR(e.expense_date) = %s
+        WHERE e.user_id = ? AND CAST(strftime('%m', e.expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', e.expense_date) AS INTEGER) = ?
         GROUP BY c.name
         ORDER BY total DESC
         LIMIT 1
@@ -63,7 +63,7 @@ def generate_smart_insights(user_id):
     upcoming = query_db("""
         SELECT name, amount, next_due_date
         FROM recurring_payments
-        WHERE user_id = %s AND is_active = TRUE AND next_due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        WHERE user_id = ? AND is_active = 1 AND next_due_date BETWEEN date('now') AND date('now', '+7 days')
     """, (user_id,))
     if upcoming:
         count = len(upcoming)

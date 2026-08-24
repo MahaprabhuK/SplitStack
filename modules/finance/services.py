@@ -1,6 +1,5 @@
 from database.db import query_db, execute_db
 from datetime import datetime, date, timedelta
-from mysql.connector import Error
 
 # ----------------------------------------------------
 # Categories Service
@@ -10,11 +9,11 @@ def get_categories(user_id=None, cat_type=None):
     query = """
         SELECT id, user_id, name, type, icon, color 
         FROM categories 
-        WHERE (user_id IS NULL OR user_id = %s)
+        WHERE (user_id IS NULL OR user_id = ?)
     """
     params = [user_id]
     if cat_type:
-        query += " AND type = %s"
+        query += " AND type = ?"
         params.append(cat_type)
     query += " ORDER BY (user_id IS NOT NULL), name ASC"
     return query_db(query, params)
@@ -28,10 +27,10 @@ def validate_category(user_id, category_id, cat_type=None):
     except (TypeError, ValueError):
         return None, "Invalid category selection."
 
-    query = "SELECT id FROM categories WHERE id = %s AND (user_id IS NULL OR user_id = %s)"
+    query = "SELECT id FROM categories WHERE id = ? AND (user_id IS NULL OR user_id = ?)"
     params = [category_id, user_id]
     if cat_type:
-        query += " AND type = %s"
+        query += " AND type = ?"
         params.append(cat_type)
     category = query_db(query, params, one=True)
     if not category:
@@ -47,22 +46,22 @@ def add_category(user_id, name, cat_type='expense', icon='tag', color='#6366f1')
         cat_type = 'expense'
     
     cat_id = execute_db(
-        "INSERT INTO categories (user_id, name, type, icon, color) VALUES (%s, %s, %s, %s, %s)",
+        "INSERT INTO categories (user_id, name, type, icon, color) VALUES (?, ?, ?, ?, ?)",
         (user_id, name, cat_type, icon or 'tag', color or '#6366f1')
     )
     return cat_id, None
 
 def delete_category(user_id, category_id):
     """Delete a custom category safely, disassociating references first."""
-    cat = query_db("SELECT * FROM categories WHERE id = %s AND user_id = %s", (category_id, user_id), one=True)
+    cat = query_db("SELECT * FROM categories WHERE id = ? AND user_id = ?", (category_id, user_id), one=True)
     if not cat:
         return False, "Category not found or cannot delete default system categories."
     
     # Set category_id = NULL in expenses, income, budgets
-    execute_db("UPDATE expenses SET category_id = NULL WHERE category_id = %s", (category_id,))
-    execute_db("UPDATE income SET category_id = NULL WHERE category_id = %s", (category_id,))
-    execute_db("DELETE FROM budgets WHERE category_id = %s", (category_id,))
-    execute_db("DELETE FROM categories WHERE id = %s AND user_id = %s", (category_id, user_id))
+    execute_db("UPDATE expenses SET category_id = NULL WHERE category_id = ?", (category_id,))
+    execute_db("UPDATE income SET category_id = NULL WHERE category_id = ?", (category_id,))
+    execute_db("DELETE FROM budgets WHERE category_id = ?", (category_id,))
+    execute_db("DELETE FROM categories WHERE id = ? AND user_id = ?", (category_id, user_id))
     return True, None
 
 # ----------------------------------------------------
@@ -76,24 +75,24 @@ def get_expenses(user_id, category_id=None, start_date=None, end_date=None, paym
                c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = %s
+        WHERE e.user_id = ?
     """
     params = [user_id]
 
     if category_id:
-        query += " AND e.category_id = %s"
+        query += " AND e.category_id = ?"
         params.append(category_id)
     if start_date:
-        query += " AND e.expense_date >= %s"
+        query += " AND e.expense_date >= ?"
         params.append(start_date)
     if end_date:
-        query += " AND e.expense_date <= %s"
+        query += " AND e.expense_date <= ?"
         params.append(end_date)
     if payment_method:
-        query += " AND e.payment_method = %s"
+        query += " AND e.payment_method = ?"
         params.append(payment_method)
     if search:
-        query += " AND (e.description LIKE %s OR c.name LIKE %s)"
+        query += " AND (e.description LIKE ? OR c.name LIKE ?)"
         search_param = f"%{search}%"
         params.extend([search_param, search_param])
 
@@ -114,10 +113,10 @@ def get_expense(user_id, expense_id):
         SELECT e.*, c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
-        WHERE e.id = %s AND e.user_id = %s
+        WHERE e.id = ? AND e.user_id = ?
     """, (expense_id, user_id), one=True)
 
-def add_expense(user_id, category_id, amount, description, expense_date, payment_method='upi'):
+def add_expense(user_id, category_id, amount, description, expense_date, payment_method='upi', commit=True):
     """Add a personal expense."""
     category_id, category_error = validate_category(user_id, category_id, 'expense')
     if category_error:
@@ -139,8 +138,8 @@ def add_expense(user_id, category_id, amount, description, expense_date, payment
 
     expense_id = execute_db("""
         INSERT INTO expenses (user_id, category_id, amount, description, expense_date, payment_method)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (user_id, category_id if category_id else None, amount, description or '', expense_date, payment_method))
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (user_id, category_id if category_id else None, amount, description or '', expense_date, payment_method), commit=commit)
     return expense_id, None
 
 def update_expense(user_id, expense_id, category_id, amount, description, expense_date, payment_method):
@@ -162,8 +161,8 @@ def update_expense(user_id, expense_id, category_id, amount, description, expens
 
     execute_db("""
         UPDATE expenses 
-        SET category_id = %s, amount = %s, description = %s, expense_date = %s, payment_method = %s
-        WHERE id = %s AND user_id = %s
+        SET category_id = ?, amount = ?, description = ?, expense_date = ?, payment_method = ?
+        WHERE id = ? AND user_id = ?
     """, (category_id if category_id else None, amount, description or '', expense_date, payment_method, expense_id, user_id))
     return True, None
 
@@ -172,7 +171,7 @@ def delete_expense(user_id, expense_id):
     expense = get_expense(user_id, expense_id)
     if not expense:
         return False, "Expense not found or unauthorized."
-    execute_db("DELETE FROM expenses WHERE id = %s AND user_id = %s", (expense_id, user_id))
+    execute_db("DELETE FROM expenses WHERE id = ? AND user_id = ?", (expense_id, user_id))
     return True, None
 
 # ----------------------------------------------------
@@ -185,20 +184,20 @@ def get_incomes(user_id, category_id=None, start_date=None, end_date=None, searc
                c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM income i
         LEFT JOIN categories c ON i.category_id = c.id
-        WHERE i.user_id = %s
+        WHERE i.user_id = ?
     """
     params = [user_id]
     if category_id:
-        query += " AND i.category_id = %s"
+        query += " AND i.category_id = ?"
         params.append(category_id)
     if start_date:
-        query += " AND i.income_date >= %s"
+        query += " AND i.income_date >= ?"
         params.append(start_date)
     if end_date:
-        query += " AND i.income_date <= %s"
+        query += " AND i.income_date <= ?"
         params.append(end_date)
     if search:
-        query += " AND (i.source LIKE %s OR c.name LIKE %s)"
+        query += " AND (i.source LIKE ? OR c.name LIKE ?)"
         search_param = f"%{search}%"
         params.extend([search_param, search_param])
     query += " ORDER BY i.income_date DESC, i.id DESC"
@@ -210,7 +209,7 @@ def get_income(user_id, income_id):
         SELECT i.*, c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM income i
         LEFT JOIN categories c ON i.category_id = c.id
-        WHERE i.id = %s AND i.user_id = %s
+        WHERE i.id = ? AND i.user_id = ?
     """, (income_id, user_id), one=True)
 
 def add_income(user_id, category_id, amount, source, income_date):
@@ -235,7 +234,7 @@ def add_income(user_id, category_id, amount, source, income_date):
 
     income_id = execute_db("""
         INSERT INTO income (user_id, category_id, amount, source, income_date)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?)
     """, (user_id, category_id if category_id else None, amount, source, income_date))
     return income_id, None
 
@@ -261,8 +260,8 @@ def update_income(user_id, income_id, category_id, amount, source, income_date):
 
     execute_db("""
         UPDATE income 
-        SET category_id = %s, amount = %s, source = %s, income_date = %s
-        WHERE id = %s AND user_id = %s
+        SET category_id = ?, amount = ?, source = ?, income_date = ?
+        WHERE id = ? AND user_id = ?
     """, (category_id if category_id else None, amount, source, income_date, income_id, user_id))
     return True, None
 
@@ -271,7 +270,7 @@ def delete_income(user_id, income_id):
     inc = get_income(user_id, income_id)
     if not inc:
         return False, "Income record not found or unauthorized."
-    execute_db("DELETE FROM income WHERE id = %s AND user_id = %s", (income_id, user_id))
+    execute_db("DELETE FROM income WHERE id = ? AND user_id = ?", (income_id, user_id))
     return True, None
 
 # ----------------------------------------------------
@@ -288,7 +287,7 @@ def get_budgets(user_id, month=None, year=None):
                c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM budgets b
         LEFT JOIN categories c ON b.category_id = c.id
-        WHERE b.user_id = %s AND b.month = %s AND b.year = %s
+        WHERE b.user_id = ? AND b.month = ? AND b.year = ?
         ORDER BY (b.category_id IS NULL) DESC, c.name ASC
     """, (user_id, month, year))
 
@@ -301,14 +300,14 @@ def get_budgets(user_id, month=None, year=None):
             spent_row = query_db("""
                 SELECT COALESCE(SUM(amount), 0) AS total_spent
                 FROM expenses
-                WHERE user_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+                WHERE user_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?
             """, (user_id, month, year), one=True)
         else:
             # Category-specific budget
             spent_row = query_db("""
                 SELECT COALESCE(SUM(amount), 0) AS total_spent
                 FROM expenses
-                WHERE user_id = %s AND category_id = %s AND MONTH(expense_date) = %s AND YEAR(expense_date) = %s
+                WHERE user_id = ? AND category_id = ? AND CAST(strftime('%m', expense_date) AS INTEGER) = ? AND CAST(strftime('%Y', expense_date) AS INTEGER) = ?
             """, (user_id, cat_id, month, year), one=True)
 
         spent = float(spent_row['total_spent']) if spent_row else 0.0
@@ -360,27 +359,27 @@ def set_budget(user_id, category_id, amount, month=None, year=None):
     # Upsert budget
     existing = query_db("""
         SELECT id FROM budgets 
-        WHERE user_id = %s AND ((category_id IS NULL AND %s IS NULL) OR (category_id = %s)) AND month = %s AND year = %s
+        WHERE user_id = ? AND ((category_id IS NULL AND ? IS NULL) OR (category_id = ?)) AND month = ? AND year = ?
     """, (user_id, cat_id, cat_id, month, year), one=True)
 
     if existing:
         execute_db("""
-            UPDATE budgets SET amount = %s WHERE id = %s
+            UPDATE budgets SET amount = ? WHERE id = ?
         """, (amount, existing['id']))
         return existing['id'], None
     else:
         bid = execute_db("""
             INSERT INTO budgets (user_id, category_id, amount, month, year)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (?, ?, ?, ?, ?)
         """, (user_id, cat_id, amount, month, year))
         return bid, None
 
 def delete_budget(user_id, budget_id):
     """Delete a budget."""
-    b = query_db("SELECT * FROM budgets WHERE id = %s AND user_id = %s", (budget_id, user_id), one=True)
+    b = query_db("SELECT * FROM budgets WHERE id = ? AND user_id = ?", (budget_id, user_id), one=True)
     if not b:
         return False, "Budget not found or unauthorized."
-    execute_db("DELETE FROM budgets WHERE id = %s AND user_id = %s", (budget_id, user_id))
+    execute_db("DELETE FROM budgets WHERE id = ? AND user_id = ?", (budget_id, user_id))
     return True, None
 
 # ----------------------------------------------------
@@ -392,7 +391,7 @@ def get_recurring_payments(user_id):
         SELECT r.*, c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM recurring_payments r
         LEFT JOIN categories c ON r.category_id = c.id
-        WHERE r.user_id = %s
+        WHERE r.user_id = ?
         ORDER BY r.is_active DESC, r.next_due_date ASC
     """, (user_id,))
 
@@ -423,23 +422,23 @@ def add_recurring_payment(user_id, category_id, name, amount, frequency, start_d
 
     rid = execute_db("""
         INSERT INTO recurring_payments (user_id, category_id, name, amount, frequency, start_date, next_due_date, is_active)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE)
-    """, (user_id, cat_id, name, amount, frequency, start_date, next_due_date))
+        VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)
+    """, (user_id, category_id, name, amount, frequency, start_date, next_due_date))
     return rid, None
 
 def toggle_recurring_payment(user_id, recurring_id):
     """Toggle active/inactive status."""
-    rec = query_db("SELECT id, is_active FROM recurring_payments WHERE id = %s AND user_id = %s", (recurring_id, user_id), one=True)
+    rec = query_db("SELECT id, is_active FROM recurring_payments WHERE id = ? AND user_id = ?", (recurring_id, user_id), one=True)
     if not rec:
         return False, "Record not found."
     new_status = not rec['is_active']
-    execute_db("UPDATE recurring_payments SET is_active = %s WHERE id = %s AND user_id = %s", (new_status, recurring_id, user_id))
+    execute_db("UPDATE recurring_payments SET is_active = ? WHERE id = ? AND user_id = ?", (new_status, recurring_id, user_id))
     return True, None
 
 def delete_recurring_payment(user_id, recurring_id):
     """Delete a recurring payment."""
-    rec = query_db("SELECT id FROM recurring_payments WHERE id = %s AND user_id = %s", (recurring_id, user_id), one=True)
+    rec = query_db("SELECT id FROM recurring_payments WHERE id = ? AND user_id = ?", (recurring_id, user_id), one=True)
     if not rec:
         return False, "Record not found."
-    execute_db("DELETE FROM recurring_payments WHERE id = %s AND user_id = %s", (recurring_id, user_id))
+    execute_db("DELETE FROM recurring_payments WHERE id = ? AND user_id = ?", (recurring_id, user_id))
     return True, None

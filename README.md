@@ -1,6 +1,6 @@
 # SplitStack - Smart Financial & Group Expense Management
 
-**SplitStack** is an intelligent, full-featured personal finance and group expense-sharing web application built with Python, Flask, MySQL, and modern vanilla web technologies.
+**SplitStack** is an intelligent, full-featured personal finance and group expense-sharing web application built with Python, Flask, SQLite, and modern vanilla web technologies.
 
 It combines daily personal budgeting, multi-party shared expense splitting, debt simplification algorithms, collaborative shopping management, financial analytics with dynamic charts, receipt OCR processing, and machine-learning-driven spending forecasts.
 
@@ -63,7 +63,7 @@ It combines daily personal budgeting, multi-party shared expense splitting, debt
 ## Technology Stack
 
 - **Backend**: Python 3.12+, Flask
-- **Database**: MySQL 8.0, `mysql-connector-python`
+- **Database**: SQLite through Python's built-in `sqlite3` module
 - **Environment**: `python-dotenv`
 - **Frontend**: HTML5, CSS3 (Modern Dark-Slate Glassmorphism Design System), Vanilla JavaScript, Chart.js, FontAwesome 6, Google Fonts (Outfit & Inter)
 - **Version Control**: Git / GitHub
@@ -81,8 +81,8 @@ SplitStack/
 ??? .env                        # Local Environment Configuration
 ?
 ??? database/
-?   ??? db.py                   # MySQL Connection Manager & auto-init
-?   ??? schema.sql              # Normalized MySQL Schema (15 Tables)
+?   ??? db.py                   # SQLite Connection Manager & auto-init
+?   ??? schema.sql              # Normalized SQLite Schema (15 Tables)
 ?
 ??? modules/
 ?   ??? auth/                   # Authentication Module (Login, Register, Profile)
@@ -125,7 +125,7 @@ SplitStack/
 
 ### 1. Prerequisites
 - Python 3.12 or newer
-- MySQL Server 8.0+ running on port 3306
+- No database server is required; SQLite stores data in `database/splitstack.db`.
 
 ### 2. Configure Environment (`.env`)
 Create `.env` in the root directory (or copy from `.env.example`):
@@ -134,16 +134,12 @@ FLASK_SECRET_KEY=splitstack-dev-secret-key-change-in-production-2026
 FLASK_ENV=development
 FLASK_DEBUG=True
 
-# MySQL Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=splitstack
+# SQLite Database Configuration
+DATABASE_PATH=database/splitstack.db
 ```
 
-### 3. Start MySQL Server
-Ensure MySQL is running on `localhost:3306`. The application automatically executes `schema.sql` on first run to create the database, tables, indexes, and seed default categories.
+### 3. Initialize SQLite
+The application automatically executes `schema.sql` on startup to create `database/splitstack.db`, its tables, indexes, and seed default categories.
 
 ### 4. Run SplitStack Application
 ```powershell
@@ -176,4 +172,4 @@ When multiple members in a group share expenses, a complex network of pairwise d
 ## Known Limitations & OCR Engine Setup
 
 - **Tesseract OCR Binary**: SplitStack includes built-in heuristic pattern extraction for receipt invoices. For full optical character recognition on handwritten or noisy receipts, install the Tesseract OCR engine binary on Windows and add it to system `PATH` (`tesseract-ocr`), or install via `pip install pytesseract pillow`.
-- **Email Dispatch**: User invitations are matched instantly against registered user accounts in MySQL. For external email notifications, configure SMTP credentials in `.env`.
+- **Email Dispatch**: User invitations are matched instantly against registered user accounts. External email notifications are not currently configured.

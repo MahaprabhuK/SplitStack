@@ -19,6 +19,9 @@ def create_app():
     app.config['DEBUG'] = config.DEBUG
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # 5MB Upload Limit
 
+    if not init_db():
+        raise RuntimeError('Unable to initialize the application database.')
+
     # Register all modular blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
