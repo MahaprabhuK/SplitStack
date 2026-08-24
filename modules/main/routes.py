@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, session, g
 from modules.auth.utils import login_required
 from database.db import query_db
-from modules.finance.services import get_expenses
+from modules.finance.services import get_expenses, get_budgets
+from modules.groups.services import get_user_groups
 from modules.analytics.insights_service import generate_smart_insights
 from ml.spending_predictor import predict_monthly_spending, assess_budget_risk
 from datetime import datetime
@@ -40,20 +41,25 @@ def dashboard():
     """, (user_id, current_month, current_year), one=True)
     total_expenses = float(expense_res['total']) if expense_res else 0.0
 
-    # 3. Net Balance
+    # 3. Net Balance & Savings
     net_balance = total_income - total_expenses
+    savings_amount = max(0.0, net_balance)
+    savings_rate = round((net_balance / total_income * 100), 1) if total_income > 0 else 0.0
 
-    # 4. Group Memberships & Count
-    group_count_res = query_db("SELECT COUNT(*) AS count FROM group_members WHERE user_id = %s", (user_id,), one=True)
-    group_count = group_count_res['count'] if group_count_res else 0
+    # 4. User Groups
+    user_groups = get_user_groups(user_id)
+    group_count = len(user_groups)
 
-    # 5. Recent Transactions (Last 5)
-    recent_expenses = get_expenses(user_id=user_id, sort='date_desc')[:5]
+    # 5. Active Category Budgets
+    active_budgets = get_budgets(user_id, current_month, current_year)
 
-    # 6. Smart Financial Insights
+    # 6. Recent Transactions (Last 5)
+    recent_expenses = get_expenses(user_id=user_id, sort='date_desc')[:6]
+
+    # 7. Smart Financial Insights
     insights = generate_smart_insights(user_id)
 
-    # 7. ML Spending Prediction
+    # 8. ML Spending Prediction
     spending_prediction = predict_monthly_spending(user_id)
     budget_risks = assess_budget_risk(user_id)
 
@@ -61,6 +67,8 @@ def dashboard():
         'total_income': total_income,
         'total_expenses': total_expenses,
         'net_balance': net_balance,
+        'savings_amount': savings_amount,
+        'savings_rate': max(0.0, savings_rate),
         'group_count': group_count,
         'current_month_name': now.strftime('%B %Y')
     }
@@ -68,8 +76,12 @@ def dashboard():
     return render_template(
         'dashboard.html',
         stats=stats,
+        budgets=active_budgets,
+        groups=user_groups,
         recent_expenses=recent_expenses,
         insights=insights,
         prediction=spending_prediction,
-        budget_risks=budget_risks
+        budget_risks=budget_risks,
+        month=current_month,
+        year=current_year
     )

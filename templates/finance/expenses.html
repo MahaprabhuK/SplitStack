@@ -4,124 +4,115 @@
 <div class="container page-content">
     <div class="page-header flex-between mb-4">
         <div>
-            <h1 class="page-title"><i class="fa-solid fa-receipt"></i> Personal Expenses</h1>
-            <p class="text-muted">Track, filter, and categorize all your daily expenditures</p>
+            <h1 class="page-title"><i class="fa-solid fa-receipt text-danger"></i> Personal Expenses</h1>
+            <p class="text-muted">Track, filter, and organize all your day-to-day personal expenditures</p>
         </div>
         <div class="header-actions flex-gap">
             <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Add Expense
             </a>
-            <a href="{{ url_for('ocr.receipt_scan') if 'ocr' in config else '/receipt-scan' }}" class="btn btn-secondary">
+            <a href="{{ url_for('ocr.receipt_scan') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-camera"></i> Scan Receipt
             </a>
         </div>
     </div>
 
-    <!-- Filter & Search Bar -->
-    <div class="filter-card glass-card mb-4">
-        <form method="GET" action="{{ url_for('finance.expenses') }}" class="filter-form">
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label class="filter-label"><i class="fa-solid fa-magnifying-glass"></i> Search</label>
-                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Description..." value="{{ search or '' }}">
-                </div>
-                <div class="filter-item">
-                    <label class="filter-label"><i class="fa-solid fa-tag"></i> Category</label>
-                    <select name="category_id" class="form-control form-control-sm">
-                        <option value="">All Categories</option>
-                        {% for cat in categories %}
-                            <option value="{{ cat.id }}" {% if selected_category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="filter-label"><i class="fa-solid fa-credit-card"></i> Payment</label>
-                    <select name="payment_method" class="form-control form-control-sm">
-                        <option value="">All Methods</option>
-                        <option value="upi" {% if payment_method == 'upi' %}selected{% endif %}>UPI</option>
-                        <option value="card" {% if payment_method == 'card' %}selected{% endif %}>Card</option>
-                        <option value="cash" {% if payment_method == 'cash' %}selected{% endif %}>Cash</option>
-                        <option value="net_banking" {% if payment_method == 'net_banking' %}selected{% endif %}>Net Banking</option>
-                        <option value="other" {% if payment_method == 'other' %}selected{% endif %}>Other</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label class="filter-label"><i class="fa-regular fa-calendar"></i> From</label>
-                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date or '' }}">
-                </div>
-                <div class="filter-item">
-                    <label class="filter-label"><i class="fa-regular fa-calendar"></i> To</label>
-                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date or '' }}">
-                </div>
-                <div class="filter-actions-item">
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Filter</button>
-                    <a href="{{ url_for('finance.expenses') }}" class="btn btn-ghost btn-sm" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
-                </div>
+    <!-- Expenses Filter Toolbar -->
+    <div class="card glass-card mb-4 p-3">
+        <form method="GET" action="{{ url_for('finance.expenses') }}" class="flex-gap" style="flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 200px;">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search description..." value="{{ search_query }}">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <select name="category" class="form-control form-control-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if selected_category == (cat.id|string) %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 140px;">
+                <select name="payment_method" class="form-control form-control-sm">
+                    <option value="">All Methods</option>
+                    <option value="upi" {% if selected_method == 'upi' %}selected{% endif %}>UPI</option>
+                    <option value="card" {% if selected_method == 'card' %}selected{% endif %}>Card</option>
+                    <option value="cash" {% if selected_method == 'cash' %}selected{% endif %}>Cash</option>
+                    <option value="net_banking" {% if selected_method == 'net_banking' %}selected{% endif %}>Net Banking</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 130px;">
+                <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}" title="From Date">
+            </div>
+            <div style="flex: 1; min-width: 130px;">
+                <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}" title="To Date">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Filter</button>
+                <a href="{{ url_for('finance.expenses') }}" class="btn btn-secondary btn-sm" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
             </div>
         </form>
     </div>
 
-    <!-- Summary Metric -->
-    <div class="summary-pill-card glass-card mb-4 flex-between">
+    <!-- Total Expenses Metric Banner -->
+    <div class="stat-card glass-card mb-4 flex-between" style="flex-direction: row; align-items: center;">
         <div>
-            <span class="text-muted">Filtered Total Spending:</span>
-            <span class="summary-amount text-danger">?{{ "%.2f"|format(total_amount) }}</span>
+            <span class="stat-label">Filtered Expenses Total</span>
+            <div class="stat-value text-danger">?{{ "%.2f"|format(total_expenses) }}</div>
         </div>
-        <div class="text-sm text-dim">
-            Showing {{ expenses|length }} transactions
+        <div>
+            <span class="badge badge-secondary">{{ expenses|length }} transaction(s) found</span>
         </div>
     </div>
 
     <!-- Expenses Table -->
     <div class="card glass-card">
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Payment</th>
-                        <th class="text-right">Amount</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if expenses %}
-                        {% for exp in expenses %}
+        <div class="card-body p-0">
+            {% if expenses %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td class="date-cell">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else 'N/A' }}</td>
-                                <td>
-                                    <span class="category-badge" style="background-color: {{ exp.category_color or '#6366f1' }}22; color: {{ exp.category_color or '#818cf8' }};">
-                                        <i class="fa-solid fa-{{ exp.category_icon or 'tag' }}"></i> {{ exp.category_name or 'Uncategorized' }}
-                                    </span>
-                                </td>
-                                <td class="font-medium">{{ exp.description or 'Expense' }}</td>
-                                <td><span class="badge badge-secondary uppercase">{{ exp.payment_method }}</span></td>
-                                <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
-                                <td class="text-center">
-                                    <div class="action-buttons-row">
-                                        <a href="{{ url_for('finance.edit_expense_route', expense_id=exp.id) }}" class="btn-icon" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <form action="{{ url_for('finance.delete_expense_route', expense_id=exp.id) }}" method="POST" onsubmit="return confirm('Delete this expense?');" style="display:inline;">
-                                            <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-                                        </form>
-                                    </div>
-                                </td>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Payment Method</th>
+                                <th class="text-right">Amount</th>
+                                <th class="text-center" style="width: 100px;">Actions</th>
                             </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center empty-state-cell">
-                                <div class="empty-state p-4">
-                                    <i class="fa-solid fa-receipt empty-icon"></i>
-                                    <p>No expenses found.</p>
-                                    <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary btn-sm mt-2"><i class="fa-solid fa-plus"></i> Add First Expense</a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenses %}
+                                <tr>
+                                    <td class="text-muted text-sm font-medium">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else 'N/A' }}</td>
+                                    <td class="font-bold">{{ exp.description or 'Expense' }}</td>
+                                    <td>
+                                        <span class="category-badge" style="background-color: {{ exp.category_color or '#6366f1' }}22; color: {{ exp.category_color or '#818cf8' }};">
+                                            <i class="fa-solid fa-{{ exp.category_icon or 'tag' }}"></i> {{ exp.category_name or 'General' }}
+                                        </span>
+                                    </td>
+                                    <td><span class="badge badge-secondary uppercase text-xs">{{ exp.payment_method }}</span></td>
+                                    <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
+                                    <td class="text-center">
+                                        <div class="flex-gap" style="justify-content: center;">
+                                            <a href="{{ url_for('finance.edit_expense_route', expense_id=exp.id) }}" class="btn-icon text-muted" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                            <form action="{{ url_for('finance.delete_expense_route', expense_id=exp.id) }}" method="POST" onsubmit="return confirm('Delete this expense?');" style="display:inline;">
+                                                <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-receipt empty-icon"></i>
+                    <h3 class="empty-title">No Expenses Found</h3>
+                    <p class="empty-desc">No expense records match your current filter criteria. Start logging expenses to track your spending.</p>
+                    <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add New Expense</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -1,84 +1,292 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard - SplitStack{% endblock %}
 
+{% block extra_css %}
+<!-- Chart.js CDN for embedded dashboard visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container page-content">
-    <!-- Welcome Greeting Section -->
-    <div class="dashboard-banner glass-card">
-        <div class="banner-content">
+    <!-- 1. Header / Welcome Banner -->
+    <div class="dashboard-banner mb-4">
+        <div>
             <div class="banner-tag"><i class="fa-solid fa-sparkles"></i> Overview &bull; {{ stats.current_month_name }}</div>
             <h1 class="banner-title">Welcome back, {{ current_user.name }}!</h1>
-            <p class="banner-subtitle">Track your personal balance, active budgets, shared groups, and predictive insights.</p>
+            <p class="banner-subtitle">Here is your comprehensive financial summary for {{ stats.current_month_name }}. Track spending, budgets, group debts, and ML insights.</p>
         </div>
-        <div class="banner-actions flex-gap">
-            <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary">
+        <div class="flex-gap">
+            <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary btn-lg">
                 <i class="fa-solid fa-plus"></i> Add Expense
             </a>
-            <a href="{{ url_for('ocr.receipt_scan') }}" class="btn btn-secondary">
+            <a href="{{ url_for('ocr.receipt_scan') }}" class="btn btn-secondary btn-lg">
                 <i class="fa-solid fa-camera"></i> Scan Receipt
             </a>
         </div>
     </div>
 
-    <!-- Quick Stats Metric Cards -->
-    <div class="stats-grid">
-        <!-- Net Balance Card -->
+    <!-- 2. Summary Metric Cards (5 Columns) -->
+    <div class="stats-grid-5 mb-4">
+        <!-- Total Balance / Net Balance -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-scale-balanced"></i></div>
-            <div class="stat-meta">
-                <span class="stat-label">Net Balance (Monthly)</span>
-                <h2 class="stat-value {% if stats.net_balance >= 0 %}text-emerald{% else %}text-danger{% endif %}">
-                    ?{{ "%.2f"|format(stats.net_balance) }}
-                </h2>
-                <span class="stat-hint">Income vs Expenses</span>
+            <div class="stat-header-row">
+                <span class="stat-label">Net Balance</span>
+                <div class="stat-icon-badge icon-balance"><i class="fa-solid fa-scale-balanced"></i></div>
+            </div>
+            <div class="stat-value {% if stats.net_balance >= 0 %}text-emerald{% else %}text-danger{% endif %}">
+                ?{{ "%.2f"|format(stats.net_balance) }}
+            </div>
+            <div class="stat-subtext">
+                {% if stats.net_balance >= 0 %}
+                    <i class="fa-solid fa-arrow-trend-up text-emerald"></i> <span class="text-emerald font-semibold">Positive Cash Flow</span>
+                {% else %}
+                    <i class="fa-solid fa-arrow-trend-down text-danger"></i> <span class="text-danger font-semibold">Negative Net Flow</span>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Total Income Card -->
+        <!-- Monthly Income -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-arrow-trend-up"></i></div>
-            <div class="stat-meta">
+            <div class="stat-header-row">
                 <span class="stat-label">Monthly Income</span>
-                <h2 class="stat-value text-emerald">?{{ "%.2f"|format(stats.total_income) }}</h2>
-                <span class="stat-hint">{{ stats.current_month_name }}</span>
+                <div class="stat-icon-badge icon-income"><i class="fa-solid fa-wallet"></i></div>
             </div>
+            <div class="stat-value text-emerald">?{{ "%.2f"|format(stats.total_income) }}</div>
+            <div class="stat-subtext text-dim">Total earned this month</div>
         </div>
 
-        <!-- Total Expenses Card -->
+        <!-- Monthly Expenses -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
-            <div class="stat-meta">
+            <div class="stat-header-row">
                 <span class="stat-label">Monthly Expenses</span>
-                <h2 class="stat-value text-danger">?{{ "%.2f"|format(stats.total_expenses) }}</h2>
-                <span class="stat-hint">{{ stats.current_month_name }}</span>
+                <div class="stat-icon-badge icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
+            </div>
+            <div class="stat-value text-danger">?{{ "%.2f"|format(stats.total_expenses) }}</div>
+            <div class="stat-subtext text-dim">Total spent this month</div>
+        </div>
+
+        <!-- Savings -->
+        <div class="stat-card glass-card">
+            <div class="stat-header-row">
+                <span class="stat-label">Savings</span>
+                <div class="stat-icon-badge icon-savings"><i class="fa-solid fa-piggy-bank"></i></div>
+            </div>
+            <div class="stat-value text-indigo">?{{ "%.2f"|format(stats.savings_amount) }}</div>
+            <div class="stat-subtext">
+                <span class="badge badge-primary">{{ stats.savings_rate }}% savings rate</span>
             </div>
         </div>
 
-        <!-- Active Groups Card -->
+        <!-- Active Groups -->
         <div class="stat-card glass-card">
-            <div class="stat-icon-wrap icon-groups"><i class="fa-solid fa-users-rectangle"></i></div>
-            <div class="stat-meta">
+            <div class="stat-header-row">
                 <span class="stat-label">Active Groups</span>
-                <h2 class="stat-value text-amber">{{ stats.group_count }}</h2>
-                <span class="stat-hint">Shared expense groups</span>
+                <div class="stat-icon-badge icon-groups"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="stat-value text-amber">{{ stats.group_count }}</div>
+            <div class="stat-subtext">
+                <a href="{{ url_for('groups.groups_list') }}" class="text-xs text-primary font-semibold">View All Groups &rarr;</a>
             </div>
         </div>
     </div>
 
-    <!-- Smart Insights & Predictive ML Section -->
+    <!-- 3. Main Analytics (Embedded Live Charts) -->
     <div class="grid-2-col mb-4">
-        <!-- Smart Financial Insights -->
+        <!-- 6-Month Income vs Expense Trend -->
         <div class="card glass-card">
             <div class="card-header flex-between">
-                <h2 class="card-title"><i class="fa-solid fa-lightbulb text-amber"></i> Smart Financial Insights</h2>
-                <span class="badge badge-primary">Live Data</span>
+                <h2 class="card-title"><i class="fa-solid fa-chart-column text-primary"></i> Income & Expense Trend</h2>
+                <a href="{{ url_for('analytics.analytics_dashboard') }}" class="text-xs text-primary font-semibold">Full Analytics &rarr;</a>
             </div>
             <div class="card-body">
+                <div style="height: 260px; position: relative;">
+                    <canvas id="dashTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Spending Distribution Doughnut Chart -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-chart-pie text-indigo"></i> Category Spending ({{ stats.current_month_name }})</h2>
+                <span class="badge badge-secondary">Current Month</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 260px; position: relative;">
+                    <canvas id="dashCategoryChart"></canvas>
+                </div>
+                <div id="dashCatEmpty" class="empty-state text-center p-3" style="display: none;">
+                    <i class="fa-solid fa-chart-pie empty-icon"></i>
+                    <p class="empty-desc">No category expenses logged this month yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Budget Progress Section -->
+    <div class="card glass-card mb-4">
+        <div class="card-header flex-between">
+            <h2 class="card-title"><i class="fa-solid fa-sliders text-amber"></i> Monthly Budget Targets ({{ stats.current_month_name }})</h2>
+            <a href="{{ url_for('finance.budgets') }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plus"></i> Set Budget</a>
+        </div>
+        <div class="card-body">
+            {% if budgets %}
+                <div class="grid-3-col">
+                    {% for b in budgets %}
+                        <div class="budget-item-card">
+                            <div class="flex-between mb-1">
+                                <span class="font-bold text-sm">{{ b.category_name or 'Overall Monthly' }}</span>
+                                <span class="badge badge-{{ 'danger' if b.status in ('danger', 'warning') else 'success' }}">
+                                    {{ b.actual_percent }}% Used
+                                </span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill fill-{{ b.status }}" style="width: {{ b.percent }}%;"></div>
+                            </div>
+                            <div class="flex-between text-xs text-muted">
+                                <span>Spent: <strong class="text-main">?{{ "%.2f"|format(b.spent) }}</strong> / ?{{ "%.2f"|format(b.budget_limit) }}</span>
+                                <span>
+                                    {% if b.remaining >= 0 %}
+                                        <span class="text-emerald">?{{ "%.2f"|format(b.remaining) }} left</span>
+                                    {% else %}
+                                        <span class="text-danger font-bold">?{{ "%.2f"|format(b.remaining|abs) }} over</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state text-center p-4">
+                    <i class="fa-solid fa-sliders empty-icon"></i>
+                    <h3 class="empty-title">No Active Budgets for {{ stats.current_month_name }}</h3>
+                    <p class="empty-desc">Set spending limits for your essential categories to track progress and prevent overspending.</p>
+                    <a href="{{ url_for('finance.budgets') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Set Your First Budget Target</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 5. Group Finance & Recent Activity Row -->
+    <div class="grid-7-5 mb-4">
+        <!-- Recent Personal Transactions -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Recent Transactions</h2>
+                <a href="{{ url_for('finance.expenses') }}" class="text-xs text-primary font-semibold">View All Expenses &rarr;</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_expenses %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Method</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exp in recent_expenses %}
+                                    <tr>
+                                        <td class="text-xs text-muted font-medium">{{ exp.expense_date.strftime('%d %b %Y') if exp.expense_date else 'N/A' }}</td>
+                                        <td class="font-semibold">{{ exp.description or 'Expense' }}</td>
+                                        <td>
+                                            <span class="category-badge" style="background-color: {{ exp.category_color or '#6366f1' }}22; color: {{ exp.category_color or '#818cf8' }};">
+                                                <i class="fa-solid fa-{{ exp.category_icon or 'tag' }}"></i> {{ exp.category_name or 'General' }}
+                                            </span>
+                                        </td>
+                                        <td><span class="badge badge-secondary uppercase text-xs">{{ exp.payment_method }}</span></td>
+                                        <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-4">
+                        <i class="fa-solid fa-receipt empty-icon"></i>
+                        <h3 class="empty-title">No Expenses Logged Yet</h3>
+                        <p class="empty-desc">Start logging your daily expenses to unlock personalized analytics, spending trends, and predictions.</p>
+                        <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Your First Expense</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Group Finance Summary -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-users text-amber"></i> Shared Groups</h2>
+                <a href="{{ url_for('groups.create_group_route') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Group</a>
+            </div>
+            <div class="card-body">
+                {% if groups %}
+                    <div class="group-preview-list">
+                        {% for g in groups[:3] %}
+                            <div class="p-3 mb-2 glass-card flex-between">
+                                <div class="flex-align-gap">
+                                    <div class="brand-logo-icon" style="width: 36px; height: 36px; font-size: 1rem;">
+                                        <i class="fa-solid fa-users-rectangle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-sm">{{ g.name }}</div>
+                                        <span class="text-xs text-muted">{{ g.member_count }} members &bull; Total spent: <strong class="text-danger">?{{ "%.2f"|format(g.total_spent) }}</strong></span>
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('groups.group_detail_route', group_id=g.id) }}" class="btn btn-secondary btn-sm">Open &rarr;</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state text-center p-3">
+                        <i class="fa-solid fa-people-group empty-icon"></i>
+                        <h3 class="empty-title">No Groups Joined Yet</h3>
+                        <p class="empty-desc">Create a group to split trip expenses, house bills, and grocery costs with friends.</p>
+                        <a href="{{ url_for('groups.create_group_route') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create Group</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Smart Insights, ML Forecasting, & Quick Actions -->
+    <div class="grid-8-4">
+        <!-- Smart Insights & Predictive ML -->
+        <div class="card glass-card">
+            <div class="card-header flex-between">
+                <h2 class="card-title"><i class="fa-solid fa-brain text-indigo"></i> Smart Insights & ML Spending Predictions</h2>
+                <span class="badge badge-primary">{{ prediction.confidence }}</span>
+            </div>
+            <div class="card-body">
+                <!-- ML Velocity Prediction Box -->
+                <div class="prediction-box p-3 glass-card mb-3">
+                    {% if prediction.has_sufficient_data %}
+                        <div class="flex-between mb-2">
+                            <span class="text-muted text-sm">Projected Month-End Spend:</span>
+                            <span class="font-bold text-danger text-xl">?{{ "%.2f"|format(prediction.projected_total) }}</span>
+                        </div>
+                        <div class="flex-between text-xs text-muted mb-2">
+                            <span>Daily Velocity: <strong class="text-main">?{{ "%.2f"|format(prediction.daily_average) }}/day</strong></span>
+                            <span>Days Remaining: <strong class="text-main">{{ prediction.days_remaining }}</strong></span>
+                        </div>
+                        <p class="text-xs text-dim italic">{{ prediction.message }}</p>
+                    {% else %}
+                        <div class="text-center p-2">
+                            <i class="fa-solid fa-chart-line text-dim mb-1"></i>
+                            <p class="text-xs text-muted">{{ prediction.message }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Insights List -->
                 {% if insights %}
                     <div class="insights-list">
                         {% for ins in insights %}
-                            <div class="insight-card-item p-3 mb-2 glass-card flex-align-gap border-left-{{ ins.color }}">
-                                <div class="cat-icon-circle bg-{{ ins.color }} text-{{ ins.color }}">
+                            <div class="insight-card-item p-3 mb-2 flex-align-gap border-left-{{ ins.color }}">
+                                <div class="cat-icon-circle bg-{{ ins.color }} text-{{ ins.color }}" style="background: rgba(255,255,255,0.05);">
                                     <i class="fa-solid fa-{{ ins.icon }}"></i>
                                 </div>
                                 <div>
@@ -89,94 +297,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="empty-state text-center p-3">
-                        <i class="fa-solid fa-sparkles empty-icon"></i>
-                        <p class="text-sm text-muted">Log your daily expenses and income to generate smart insights automatically.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Predictive Spending Forecast (ML) -->
-        <div class="card glass-card">
-            <div class="card-header flex-between">
-                <h2 class="card-title"><i class="fa-solid fa-brain text-indigo"></i> ML Spending Forecast</h2>
-                <span class="badge badge-secondary text-xs">{{ prediction.confidence }}</span>
-            </div>
-            <div class="card-body">
-                <div class="prediction-box p-3 glass-card mb-3">
-                    {% if prediction.has_sufficient_data %}
-                        <div class="flex-between mb-2">
-                            <span class="text-muted text-sm">Projected Month-End Spend:</span>
-                            <span class="font-bold text-danger text-lg">?{{ "%.2f"|format(prediction.projected_total) }}</span>
-                        </div>
-                        <div class="flex-between text-xs text-muted mb-2">
-                            <span>Daily Velocity: ?{{ "%.2f"|format(prediction.daily_average) }}/day</span>
-                            <span>Remaining Days: {{ prediction.days_remaining }}</span>
-                        </div>
-                        <p class="text-xs text-dim italic">{{ prediction.message }}</p>
-                    {% else %}
-                        <div class="empty-state text-center p-2">
-                            <i class="fa-solid fa-chart-line empty-icon text-muted"></i>
-                            <p class="text-xs text-muted">{{ prediction.message }}</p>
-                        </div>
-                    {% endif %}
-                </div>
-
-                {% if budget_risks %}
-                    <div class="budget-risks-wrap">
-                        <span class="text-xs font-semibold text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Budget Risk Alerts:</span>
-                        {% for r in budget_risks %}
-                            <div class="text-xs text-muted mt-1">&bull; <strong>{{ r.category }}</strong>: {{ r.description }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions & Recent Transactions Grid -->
-    <div class="grid-2-col">
-        <!-- Recent Transactions -->
-        <div class="card glass-card">
-            <div class="card-header flex-between">
-                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Transactions</h2>
-                <a href="{{ url_for('finance.expenses') }}" class="btn btn-ghost btn-sm text-primary">View All</a>
-            </div>
-            <div class="card-body">
-                {% if recent_expenses %}
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Category</th>
-                                    <th class="text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for exp in recent_expenses %}
-                                    <tr>
-                                        <td class="text-xs">{{ exp.expense_date.strftime('%d %b') if exp.expense_date else 'N/A' }}</td>
-                                        <td class="font-medium">{{ exp.description or 'Expense' }}</td>
-                                        <td>
-                                            <span class="category-badge text-xs" style="background-color: {{ exp.category_color or '#6366f1' }}22; color: {{ exp.category_color or '#818cf8' }};">
-                                                <i class="fa-solid fa-{{ exp.category_icon or 'tag' }}"></i> {{ exp.category_name or 'General' }}
-                                            </span>
-                                        </td>
-                                        <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="empty-state text-center p-4">
-                        <i class="fa-solid fa-receipt empty-icon"></i>
-                        <p>No recent transactions recorded.</p>
-                        <a href="{{ url_for('finance.add_expense_route') }}" class="btn btn-primary btn-sm mt-2">Log Expense</a>
-                    </div>
+                    <p class="text-xs text-dim text-center">Log your daily transactions to unlock automated financial alerts and insights.</p>
                 {% endif %}
             </div>
         </div>
@@ -184,35 +305,122 @@
         <!-- Quick Platform Actions -->
         <div class="card glass-card">
             <div class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</h2>
+                <h2 class="card-title"><i class="fa-solid fa-bolt text-amber"></i> Quick Actions</h2>
             </div>
             <div class="card-body quick-actions-container">
                 <a href="{{ url_for('finance.add_expense_route') }}" class="action-btn">
                     <i class="fa-solid fa-plus-circle text-danger"></i>
-                    <span>Log Personal Expense</span>
+                    <span>Add Expense</span>
                 </a>
                 <a href="{{ url_for('finance.add_income_route') }}" class="action-btn">
                     <i class="fa-solid fa-wallet text-emerald"></i>
-                    <span>Record Income / Salary</span>
+                    <span>Log Income</span>
                 </a>
                 <a href="{{ url_for('groups.create_group_route') }}" class="action-btn">
                     <i class="fa-solid fa-user-group text-primary"></i>
-                    <span>Create Expense Group</span>
+                    <span>Create Group</span>
                 </a>
                 <a href="{{ url_for('shopping.create_shopping_list_route') }}" class="action-btn">
                     <i class="fa-solid fa-cart-plus text-amber"></i>
-                    <span>New Shopping Checklist</span>
+                    <span>Shopping List</span>
                 </a>
                 <a href="{{ url_for('ocr.receipt_scan') }}" class="action-btn">
                     <i class="fa-solid fa-camera text-indigo"></i>
-                    <span>Scan Receipt with OCR</span>
+                    <span>Scan Receipt</span>
                 </a>
                 <a href="{{ url_for('analytics.analytics_dashboard') }}" class="action-btn">
                     <i class="fa-solid fa-chart-pie text-cyan"></i>
-                    <span>Open Analytics Dashboard</span>
+                    <span>Analytics</span>
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Dashboard 6-Month Income vs Expense Trend Chart
+    try {
+        const trendResp = await fetch("{{ url_for('analytics.api_monthly_trend') }}");
+        const trendData = await trendResp.json();
+
+        const labels = trendData.map(d => d.month);
+        const incomeData = trendData.map(d => d.income);
+        const expenseData = trendData.map(d => d.expense);
+
+        const trendCtx = document.getElementById('dashTrendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Income (?)',
+                        data: incomeData,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Expenses (?)',
+                        data: expenseData,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Error loading dashboard trend chart", e);
+    }
+
+    // 2. Dashboard Category Doughnut Chart
+    try {
+        const catResp = await fetch("{{ url_for('analytics.api_categories_breakdown', month=month, year=year) }}");
+        const catData = await catResp.json();
+
+        if (catData && catData.length > 0) {
+            const catLabels = catData.map(c => c.category_name);
+            const catAmounts = catData.map(c => c.amount);
+            const catColors = catData.map(c => c.category_color || '#6366f1');
+
+            const catCtx = document.getElementById('dashCategoryChart').getContext('2d');
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catAmounts,
+                        backgroundColor: catColors,
+                        borderWidth: 2,
+                        borderColor: '#0d1527'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('dashCategoryChart').style.display = 'none';
+            document.getElementById('dashCatEmpty').style.display = 'block';
+        }
+    } catch (e) {
+        console.error("Error loading dashboard category chart", e);
+    }
+});
+</script>
 {% endblock %}

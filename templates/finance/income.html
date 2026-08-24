@@ -4,75 +4,74 @@
 <div class="container page-content">
     <div class="page-header flex-between mb-4">
         <div>
-            <h1 class="page-title"><i class="fa-solid fa-wallet"></i> Income Tracking</h1>
-            <p class="text-muted">Manage your salaries, dividends, freelance earnings, and deposits</p>
+            <h1 class="page-title"><i class="fa-solid fa-wallet text-emerald"></i> Income Tracker</h1>
+            <p class="text-muted">Record salaries, dividends, freelance gigs, and all incoming revenue streams</p>
         </div>
         <div class="header-actions">
             <a href="{{ url_for('finance.add_income_route') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Add Income
+                <i class="fa-solid fa-plus"></i> Record Income
             </a>
         </div>
     </div>
 
-    <!-- Summary Metric -->
-    <div class="summary-pill-card glass-card mb-4 flex-between">
+    <!-- Income Summary Banner -->
+    <div class="stat-card glass-card mb-4 flex-between" style="flex-direction: row; align-items: center;">
         <div>
-            <span class="text-muted">Total Recorded Income:</span>
-            <span class="summary-amount text-emerald">?{{ "%.2f"|format(total_amount) }}</span>
+            <span class="stat-label">Total Recorded Income</span>
+            <div class="stat-value text-emerald">?{{ "%.2f"|format(total_income) }}</div>
         </div>
-        <div class="text-sm text-dim">
-            {{ incomes|length }} entries
+        <div>
+            <span class="badge badge-success">{{ income_list|length }} record(s)</span>
         </div>
     </div>
 
     <!-- Income Table -->
     <div class="card glass-card">
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Source</th>
-                        <th>Category</th>
-                        <th class="text-right">Amount</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if incomes %}
-                        {% for inc in incomes %}
+        <div class="card-body p-0">
+            {% if income_list %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td class="date-cell">{{ inc.income_date.strftime('%d %b %Y') if inc.income_date else 'N/A' }}</td>
-                                <td class="font-medium">{{ inc.source }}</td>
-                                <td>
-                                    <span class="category-badge" style="background-color: {{ inc.category_color or '#10b981' }}22; color: {{ inc.category_color or '#34d399' }}; border: 1px solid {{ inc.category_color or '#10b981' }}44;">
-                                        <i class="fa-solid fa-{{ inc.category_icon or 'wallet' }}"></i> {{ inc.category_name or 'Income' }}
-                                    </span>
-                                </td>
-                                <td class="text-right font-bold text-emerald">+ ?{{ "%.2f"|format(inc.amount) }}</td>
-                                <td class="text-center">
-                                    <div class="action-buttons-row">
-                                        <a href="{{ url_for('finance.edit_income_route', income_id=inc.id) }}" class="btn-icon" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <form action="{{ url_for('finance.delete_income_route', income_id=inc.id) }}" method="POST" onsubmit="return confirm('Delete this income record?');" style="display:inline;">
-                                            <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-                                        </form>
-                                    </div>
-                                </td>
+                                <th>Date</th>
+                                <th>Source / Description</th>
+                                <th>Category</th>
+                                <th class="text-right">Amount</th>
+                                <th class="text-center" style="width: 100px;">Actions</th>
                             </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center empty-state-cell">
-                                <div class="empty-state p-4">
-                                    <i class="fa-solid fa-money-bill-wave empty-icon"></i>
-                                    <p>No income records logged yet.</p>
-                                    <a href="{{ url_for('finance.add_income_route') }}" class="btn btn-primary btn-sm mt-2"><i class="fa-solid fa-plus"></i> Record First Income</a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            {% for inc in income_list %}
+                                <tr>
+                                    <td class="text-muted text-sm font-medium">{{ inc.income_date.strftime('%d %b %Y') if inc.income_date else 'N/A' }}</td>
+                                    <td class="font-bold">{{ inc.source or 'Income' }}</td>
+                                    <td>
+                                        <span class="category-badge" style="background-color: {{ inc.category_color or '#10b981' }}22; color: {{ inc.category_color or '#34d399' }};">
+                                            <i class="fa-solid fa-{{ inc.category_icon or 'wallet' }}"></i> {{ inc.category_name or 'Salary / Earnings' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-right font-bold text-emerald">+ ?{{ "%.2f"|format(inc.amount) }}</td>
+                                    <td class="text-center">
+                                        <div class="flex-gap" style="justify-content: center;">
+                                            <a href="{{ url_for('finance.edit_income_route', income_id=inc.id) }}" class="btn-icon text-muted" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                            <form action="{{ url_for('finance.delete_income_route', income_id=inc.id) }}" method="POST" onsubmit="return confirm('Delete this income record?');" style="display:inline;">
+                                                <button type="submit" class="btn-icon text-danger" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-wallet empty-icon"></i>
+                    <h3 class="empty-title">No Income Records Yet</h3>
+                    <p class="empty-desc">Log your monthly salary or earnings to calculate your savings rate and cash flow accurately.</p>
+                    <a href="{{ url_for('finance.add_income_route') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Record Your First Income</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
