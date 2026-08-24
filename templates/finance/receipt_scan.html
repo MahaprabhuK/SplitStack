@@ -3,763 +3,283 @@
 {% block title %}Receipt Scanner (OCR) - SplitStack{% endblock %}
 
 {% block content %}
-
 <div class="auth-page-container">
     <div class="auth-card glass-card" style="max-width: 540px;">
-
         <!-- Header -->
         <div class="auth-header">
             <div class="auth-icon-badge">
                 <i class="fa-solid fa-camera"></i>
             </div>
-
             <h1 class="auth-title">Receipt OCR Scanner</h1>
-
             <p class="auth-subtitle">
-                Upload bill or invoice photos to extract total amount
-                and merchant details automatically
+                Upload bill or invoice photos to extract total amount and merchant details automatically
             </p>
         </div>
 
-
-        <!-- ==========================================
-             UPLOAD / CAMERA TABS
-        =========================================== -->
-
+        <!-- Tabs: Upload / Take Photo -->
         <div class="form-group mb-3">
             <div class="flex-gap" style="gap: 0.5rem;">
-
-                <button
-                    type="button"
-                    class="btn btn-tab active"
-                    data-tab="upload"
-                    id="uploadTabBtn"
-                    style="flex: 1;"
-                >
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    Upload Receipt
+                <button type="button" class="btn btn-tab active" data-tab="upload" id="uploadTabBtn" style="flex: 1;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Receipt
                 </button>
-
-                <button
-                    type="button"
-                    class="btn btn-tab"
-                    data-tab="camera"
-                    id="cameraTabBtn"
-                    style="flex: 1;"
-                >
-                    <i class="fa-solid fa-camera"></i>
-                    Take Photo
+                <button type="button" class="btn btn-tab" data-tab="camera" id="cameraTabBtn" style="flex: 1;">
+                    <i class="fa-solid fa-camera"></i> Take Photo
                 </button>
-
             </div>
         </div>
 
-
-        <!-- ==========================================
-             FILE UPLOAD TAB
-        =========================================== -->
-
-        <div
-            class="tab-content active"
-            id="uploadTab"
-            data-tab="upload"
-        >
-
-            <form
-                method="POST"
-                enctype="multipart/form-data"
-                class="auth-form"
-                id="receiptUploadForm"
-            >
-
-                <!-- CSRF -->
-                <input
-                    type="hidden"
-                    name="_csrf_token"
-                    value="{{ csrf_token() }}"
-                >
-
+        <!-- Tab 1: Normal File Upload -->
+        <div class="tab-content active" id="uploadTab" data-tab="upload">
+            <form method="POST" action="{{ url_for('ocr.receipt_scan') }}" enctype="multipart/form-data" class="auth-form" id="receiptUploadForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
                 <div class="form-group">
-
-                    <label
-                        for="receipt_file"
-                        class="form-label"
-                    >
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        Select Receipt Image *
+                    <label for="receipt_file" class="form-label">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Select Receipt Image *
                     </label>
-
-                    <input
-                        type="file"
-                        id="receipt_file"
-                        name="receipt_file"
-                        class="form-control"
-                        accept="image/png, image/jpeg, image/webp"
-                        required
-                    >
-
+                    <input type="file" id="receipt_file" name="receipt_file" class="form-control" accept="image/png, image/jpeg, image/webp" required>
                     <span class="text-xs text-muted mt-1 block">
-                        Supported: PNG, JPG, JPEG, WEBP
-                        (Max 5MB)
+                        Supported: PNG, JPG, JPEG, WEBP (Max 5MB)
                     </span>
-
                 </div>
-
-
-                <!-- Verification notice -->
 
                 <div class="alert alert-info">
-
                     <i class="fa-solid fa-shield-halved"></i>
-
                     <strong>Verification Guaranteed:</strong>
-
-                    SplitStack will never save an expense automatically.
-                    You will be able to review and adjust extracted
-                    values before saving.
-
+                    SplitStack will never save an expense automatically. You will be able to review and adjust extracted values before saving.
                 </div>
 
-
-                <!-- Submit -->
-
-                <button
-                    type="submit"
-                    class="btn btn-primary btn-block btn-lg"
-                    id="scanBtn"
-                >
-
-                    <i class="fa-solid fa-magnifying-glass-chart"></i>
-
-                    Scan & Extract Data
-
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="scanBtn">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i> Scan & Extract Data
                 </button>
-
             </form>
-
         </div>
 
-
-
-        <!-- ==========================================
-             CAMERA TAB
-        =========================================== -->
-
-        <div
-            class="tab-content"
-            id="cameraTab"
-            data-tab="camera"
-        >
-
-            <!-- IMPORTANT:
-                 The camera input is INSIDE the form.
-                 This allows the browser to submit the
-                 actual captured File object.
-            -->
-
-            <form
-                method="POST"
-                enctype="multipart/form-data"
-                class="auth-form"
-                id="cameraSubmitForm"
-            >
-
-                <!-- CSRF -->
-
-                <input
-                    type="hidden"
-                    name="_csrf_token"
-                    value="{{ csrf_token() }}"
-                >
-
-
-                <!-- Camera input -->
+        <!-- Tab 2: Camera Capture -->
+        <div class="tab-content" id="cameraTab" data-tab="camera">
+            <form method="POST" action="{{ url_for('ocr.receipt_scan') }}" enctype="multipart/form-data" class="auth-form" id="cameraSubmitForm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
                 <div class="form-group">
-
-                    <label
-                        for="camera_file"
-                        class="form-label"
-                    >
-
-                        <i class="fa-solid fa-camera"></i>
-
-                        Capture Receipt Photo *
-
+                    <label for="camera_file" class="form-label">
+                        <i class="fa-solid fa-camera"></i> Capture Receipt Photo *
                     </label>
-
-
-                    <input
-                        type="file"
-                        id="camera_file"
-                        name="receipt_file"
-                        class="form-control"
-                        accept="image/png, image/jpeg, image/webp"
-                        capture="environment"
-                        required
-                    >
-
-
+                    <input type="file" id="camera_file" name="receipt_file" class="form-control" accept="image/png, image/jpeg, image/webp" capture="environment">
                     <span class="text-xs text-muted mt-1 block">
-
-                        Tap to open your device's rear camera
-
+                        Tap to open your device's camera
                     </span>
-
                 </div>
 
-
-
-                <!-- ==========================================
-                     CAMERA PREVIEW
-                =========================================== -->
-
-                <div
-                    id="cameraPreviewContainer"
-                    style="display: none;"
-                >
-
+                <!-- Camera Preview & Action Buttons -->
+                <div id="cameraPreviewContainer" style="display: none;">
                     <div class="form-group">
-
-                        <label class="form-label">
-                            Preview
-                        </label>
-
-
-                        <div
-                            class="receipt-preview-wrap text-center mb-3"
-                        >
-
-                            <img
-                                id="cameraPreviewImage"
-                                src=""
-                                alt="Captured Receipt"
-                                style="
-                                    max-height: 300px;
-                                    max-width: 100%;
-                                    border-radius: var(--radius-sm);
-                                    border: 1px solid var(--border-color);
-                                    object-fit: contain;
-                                "
-                            >
-
+                        <label class="form-label">Preview</label>
+                        <div class="receipt-preview-wrap text-center mb-3">
+                            <img id="cameraPreviewImage" src="" alt="Captured Receipt" style="max-height: 300px; max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color); object-fit: contain;">
                         </div>
-
                     </div>
-
-
-
-                    <!-- Camera actions -->
 
                     <div class="flex-gap">
-
-                        <button
-                            type="submit"
-                            class="btn btn-primary btn-block btn-lg"
-                            id="cameraScanBtn"
-                            style="flex: 1;"
-                        >
-
-                            <i class="fa-solid fa-magnifying-glass-chart"></i>
-
-                            Scan & Extract Data
-
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="cameraScanBtn" style="flex: 1;">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i> Scan & Extract Data
                         </button>
-
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary btn-lg"
-                            id="cameraRetakeBtn"
-                        >
-
-                            <i class="fa-solid fa-rotate-left"></i>
-
-                            Retake
-
+                        <button type="button" class="btn btn-secondary btn-lg" id="cameraRetakeBtn">
+                            <i class="fa-solid fa-rotate-left"></i> Retake
                         </button>
-
                     </div>
-
                 </div>
 
-
-
-                <!-- ==========================================
-                     CAMERA PERMISSION MESSAGE
-                =========================================== -->
-
-                <div
-                    class="alert alert-info"
-                    id="cameraPermissionAlert"
-                    style="display: none;"
-                >
-
+                <!-- Camera Permission / Error Alert -->
+                <div class="alert alert-info mt-3" id="cameraPermissionAlert" style="display: none;">
                     <i class="fa-solid fa-circle-exclamation"></i>
-
                     <strong>Camera Access Denied:</strong>
-
-                    You can upload a receipt image instead using
-                    the Upload tab.
-
+                    You can upload a receipt image instead using the Upload tab.
                 </div>
 
-
-
-                <!-- Verification notice -->
-
-                <div class="alert alert-info">
-
+                <div class="alert alert-info mt-3">
                     <i class="fa-solid fa-shield-halved"></i>
-
                     <strong>Verification Guaranteed:</strong>
-
-                    SplitStack will never save an expense automatically.
-                    You will be able to review and adjust extracted
-                    values before saving.
-
+                    SplitStack will never save an expense automatically. You will be able to review and adjust extracted values before saving.
                 </div>
-
             </form>
-
         </div>
-
     </div>
 </div>
 
-
-
-<!-- ==========================================
-     TAB + CAMERA STYLING
-=========================================== -->
-
 <style>
-
 .btn-tab {
-
     border-bottom: 2px solid transparent;
-
     border-radius: 0;
-
     font-weight: 500;
-
     transition: all 0.3s ease;
-
     padding: 10px 16px;
-
 }
-
-
 .btn-tab:not(.active) {
-
     color: var(--text-muted);
-
 }
-
-
 .btn-tab.active {
-
     color: var(--primary);
-
     border-bottom-color: var(--primary);
-
 }
-
-
 .tab-content {
-
     display: none;
-
 }
-
-
 .tab-content.active {
-
     display: block;
-
 }
-
-
-/* Camera preview */
-
 .receipt-preview-wrap {
-
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     width: 100%;
-
     min-height: 120px;
-
     overflow: hidden;
-
 }
-
-
-/* Mobile improvements */
-
 @media (max-width: 600px) {
-
     .flex-gap {
-
         flex-wrap: wrap;
-
     }
-
     #cameraScanBtn {
-
         min-width: 100%;
-
     }
-
     #cameraRetakeBtn {
-
         width: 100%;
-
     }
-
     .btn-tab {
-
         font-size: 0.9rem;
-
     }
-
 }
-
 </style>
 
-
-
-<!-- ==========================================
-     JAVASCRIPT
-=========================================== -->
-
 <script>
-
 document.addEventListener('DOMContentLoaded', () => {
+    const uploadTabBtn = document.getElementById('uploadTabBtn');
+    const cameraTabBtn = document.getElementById('cameraTabBtn');
+    const uploadTab = document.getElementById('uploadTab');
+    const cameraTab = document.getElementById('cameraTab');
 
+    const cameraFile = document.getElementById('camera_file');
+    const cameraPreviewContainer = document.getElementById('cameraPreviewContainer');
+    const cameraPreviewImage = document.getElementById('cameraPreviewImage');
+    const cameraRetakeBtn = document.getElementById('cameraRetakeBtn');
+    const cameraPermissionAlert = document.getElementById('cameraPermissionAlert');
+    const cameraSubmitForm = document.getElementById('cameraSubmitForm');
+    const receiptUploadForm = document.getElementById('receiptUploadForm');
 
-    /* ==========================================
-       ELEMENT REFERENCES
-    =========================================== */
+    // Tab switching
+    if (uploadTabBtn && cameraTabBtn) {
+        uploadTabBtn.addEventListener('click', () => {
+            uploadTabBtn.classList.add('active');
+            cameraTabBtn.classList.remove('active');
+            uploadTab.classList.add('active');
+            cameraTab.classList.remove('active');
+        });
 
-    const uploadTabBtn =
-        document.getElementById('uploadTabBtn');
+        cameraTabBtn.addEventListener('click', () => {
+            cameraTabBtn.classList.add('active');
+            uploadTabBtn.classList.remove('active');
+            cameraTab.classList.add('active');
+            uploadTab.classList.remove('active');
+        });
+    }
 
-    const cameraTabBtn =
-        document.getElementById('cameraTabBtn');
+    // Camera photo selection & preview
+    if (cameraFile) {
+        cameraFile.addEventListener('change', (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) {
+                if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'none';
+                if (cameraPreviewImage) cameraPreviewImage.src = '';
+                return;
+            }
 
-    const uploadTab =
-        document.getElementById('uploadTab');
+            const allowedExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+            const fileName = (file.name || '').toLowerCase();
+            const fileExt = fileName.includes('.') ? fileName.split('.').pop() : '';
+            const fileType = (file.type || '').toLowerCase();
 
-    const cameraTab =
-        document.getElementById('cameraTab');
+            const isValidType = allowedExtensions.includes(fileExt) ||
+                                ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(fileType);
 
-    const cameraFile =
-        document.getElementById('camera_file');
+            if (!isValidType) {
+                alert('Please select a valid PNG, JPG, JPEG, or WEBP image.');
+                cameraFile.value = '';
+                if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'none';
+                if (cameraPreviewImage) cameraPreviewImage.src = '';
+                return;
+            }
 
-    const cameraPreviewContainer =
-        document.getElementById('cameraPreviewContainer');
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('Receipt image must be smaller than 5 MB.');
+                cameraFile.value = '';
+                if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'none';
+                if (cameraPreviewImage) cameraPreviewImage.src = '';
+                return;
+            }
 
-    const cameraPreviewImage =
-        document.getElementById('cameraPreviewImage');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (cameraPreviewImage) cameraPreviewImage.src = e.target.result;
+                if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'block';
+                if (cameraPermissionAlert) cameraPermissionAlert.style.display = 'none';
+            };
+            reader.onerror = () => {
+                if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
 
-    const cameraRetakeBtn =
-        document.getElementById('cameraRetakeBtn');
+        cameraFile.addEventListener('error', () => {
+            if (cameraPermissionAlert) cameraPermissionAlert.style.display = 'block';
+        });
+    }
 
-    const cameraPermissionAlert =
-        document.getElementById('cameraPermissionAlert');
-
-    const cameraSubmitForm =
-        document.getElementById('cameraSubmitForm');
-
-
-    /* ==========================================
-       TAB SWITCHING
-    =========================================== */
-
-    uploadTabBtn.addEventListener('click', () => {
-
-        uploadTabBtn.classList.add('active');
-
-        cameraTabBtn.classList.remove('active');
-
-        uploadTab.classList.add('active');
-
-        cameraTab.classList.remove('active');
-
-        cameraPreviewContainer.style.display = 'none';
-
-    });
-
-
-    cameraTabBtn.addEventListener('click', () => {
-
-        cameraTabBtn.classList.add('active');
-
-        uploadTabBtn.classList.remove('active');
-
-        cameraTab.classList.add('active');
-
-        uploadTab.classList.remove('active');
-
-    });
-
-
-
-    /* ==========================================
-       CAMERA FILE SELECTION
-    =========================================== */
-
-    cameraFile.addEventListener('change', (event) => {
-
-        const file = event.target.files[0];
-
-
-        /* No file selected */
-
-        if (!file) {
-
-            cameraPreviewContainer.style.display = 'none';
-
-            cameraPreviewImage.src = '';
-
-            return;
-
-        }
-
-
-        /* Allowed MIME types */
-
-        const allowedTypes = [
-
-            'image/png',
-
-            'image/jpeg',
-
-            'image/webp'
-
-        ];
-
-
-        /* Validate MIME type */
-
-        if (!allowedTypes.includes(file.type)) {
-
-            alert(
-                'Please select a valid PNG, JPG, JPEG, or WEBP image.'
-            );
-
+    // Retake button
+    if (cameraRetakeBtn && cameraFile) {
+        cameraRetakeBtn.addEventListener('click', () => {
             cameraFile.value = '';
-
-            cameraPreviewContainer.style.display = 'none';
-
-            cameraPreviewImage.src = '';
-
-            return;
-
-        }
-
-
-        /* Maximum 5 MB */
-
-        const maxSize = 5 * 1024 * 1024;
-
-
-        if (file.size > maxSize) {
-
-            alert(
-                'The receipt image must be smaller than 5 MB.'
-            );
-
-            cameraFile.value = '';
-
-            cameraPreviewContainer.style.display = 'none';
-
-            cameraPreviewImage.src = '';
-
-            return;
-
-        }
-
-
-        /* ==========================================
-           CREATE PREVIEW
-        =========================================== */
-
-        const reader = new FileReader();
-
-
-        reader.onload = (event) => {
-
-            cameraPreviewImage.src =
-                event.target.result;
-
-            cameraPreviewContainer.style.display =
-                'block';
-
-            cameraPermissionAlert.style.display =
-                'none';
-
-        };
-
-
-        reader.onerror = () => {
-
-            alert(
-                'Unable to preview the selected image. Please try again.'
-            );
-
-            cameraFile.value = '';
-
-            cameraPreviewContainer.style.display =
-                'none';
-
-            cameraPreviewImage.src = '';
-
-        };
-
-
-        reader.readAsDataURL(file);
-
-    });
-
-
-
-    /* ==========================================
-       RETAKE
-    =========================================== */
-
-    cameraRetakeBtn.addEventListener('click', () => {
-
-        cameraFile.value = '';
-
-        cameraPreviewContainer.style.display =
-            'none';
-
-        cameraPreviewImage.src = '';
-
-        cameraPermissionAlert.style.display =
-            'none';
-
-
-        /*
-         * Re-open the camera/file picker.
-         *
-         * On supported mobile browsers this will
-         * open the rear camera because of:
-         *
-         * capture="environment"
-         */
-
-        cameraFile.click();
-
-    });
-
-
-
-    /* ==========================================
-       CAMERA PERMISSION / INPUT ERROR
-    =========================================== */
-
-    cameraFile.addEventListener('error', () => {
-
-        cameraPermissionAlert.style.display =
-            'block';
-
-    });
-
-
-
-    /* ==========================================
-       CAMERA FORM SUBMISSION
-    =========================================== */
-
-    cameraSubmitForm.addEventListener('submit', (event) => {
-
-        /*
-         * IMPORTANT:
-         *
-         * Do NOT use event.preventDefault().
-         *
-         * The camera input is now INSIDE the form
-         * and has:
-         *
-         * name="receipt_file"
-         *
-         * Therefore the browser automatically submits
-         * the actual captured File object as:
-         *
-         * multipart/form-data
-         *
-         * Flask receives it through:
-         *
-         * request.files['receipt_file']
-         */
-
-
-        const file =
-            cameraFile.files[0];
-
-
-        /* Safety check */
-
-        if (!file) {
-
-            event.preventDefault();
-
-            alert(
-                'Please capture a receipt image first.'
-            );
-
-            return;
-
-        }
-
-
-        /* Validate image */
-
-        const allowedTypes = [
-
-            'image/png',
-
-            'image/jpeg',
-
-            'image/webp'
-
-        ];
-
-
-        if (!allowedTypes.includes(file.type)) {
-
-            event.preventDefault();
-
-            alert(
-                'Please select a valid receipt image.'
-            );
-
-            return;
-
-        }
-
-
-        /*
-         * Do not prevent the normal form submission.
-         *
-         * Existing Flask OCR route will handle:
-         *
-         * receipt_file
-         * _csrf_token
-         */
-
-    });
-
+            if (cameraPreviewImage) cameraPreviewImage.src = '';
+            if (cameraPreviewContainer) cameraPreviewContainer.style.display = 'none';
+            cameraFile.click();
+        });
+    }
+
+    // Camera form submit handler
+    if (cameraSubmitForm) {
+        cameraSubmitForm.addEventListener('submit', (event) => {
+            const file = cameraFile && cameraFile.files && cameraFile.files[0];
+            if (!file) {
+                alert('Please capture a receipt photo first.');
+                event.preventDefault();
+                return;
+            }
+
+            const scanBtn = document.getElementById('cameraScanBtn');
+            if (scanBtn) {
+                scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing OCR...';
+            }
+            // Real multipart/form-data submission proceeds natively to Flask OCR endpoint
+        });
+    }
+
+    // Normal upload form submit handler
+    if (receiptUploadForm) {
+        receiptUploadForm.addEventListener('submit', (event) => {
+            const uploadFile = document.getElementById('receipt_file');
+            if (!uploadFile || !uploadFile.files || !uploadFile.files[0]) {
+                alert('Please select a receipt image file.');
+                event.preventDefault();
+                return;
+            }
+
+            const scanBtn = document.getElementById('scanBtn');
+            if (scanBtn) {
+                scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing OCR...';
+            }
+            // Real multipart/form-data submission proceeds natively to Flask OCR endpoint
+        });
+    }
 });
-
 </script>
-
 {% endblock %}
