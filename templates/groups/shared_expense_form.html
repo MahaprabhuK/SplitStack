@@ -20,7 +20,7 @@
 
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label for="amount" class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> Total Amount (?) *</label>
+                    <label for="amount" class="form-label"><i class="fa-solid fa-indian-rupee-sign"></i> Total Amount (₹) *</label>
                     <input type="number" step="0.01" min="0.01" id="amount" name="amount" class="form-control" placeholder="0.00" value="{{ form_data.amount or '' }}" required>
                 </div>
                 <div class="form-group">
@@ -68,7 +68,7 @@
                                 <span class="checkmark"></span>
                                 <span class="font-medium">{{ m.name }}</span>
                             </label>
-                            <input type="number" step="0.01" min="0" name="share_{{ m.user_id }}" class="form-control form-control-sm custom-share-input" placeholder="? Amount" style="max-width: 120px; display: none;">
+                            <input type="number" step="0.01" min="0" name="share_{{ m.user_id }}" class="form-control form-control-sm custom-share-input" placeholder="₹ Amount" style="max-width: 120px; display: none;">
                         </div>
                     {% endfor %}
                 </div>

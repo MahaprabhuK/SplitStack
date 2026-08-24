@@ -34,7 +34,7 @@
                 <div class="stat-icon-badge icon-balance"><i class="fa-solid fa-scale-balanced"></i></div>
             </div>
             <div class="stat-value {% if stats.net_balance >= 0 %}text-emerald{% else %}text-danger{% endif %}">
-                ?{{ "%.2f"|format(stats.net_balance) }}
+                ₹{{ "%.2f"|format(stats.net_balance) }}
             </div>
             <div class="stat-subtext">
                 {% if stats.net_balance >= 0 %}
@@ -51,7 +51,7 @@
                 <span class="stat-label">Monthly Income</span>
                 <div class="stat-icon-badge icon-income"><i class="fa-solid fa-wallet"></i></div>
             </div>
-            <div class="stat-value text-emerald">?{{ "%.2f"|format(stats.total_income) }}</div>
+            <div class="stat-value text-emerald">₹{{ "%.2f"|format(stats.total_income) }}</div>
             <div class="stat-subtext text-dim">Total earned this month</div>
         </div>
 
@@ -61,7 +61,7 @@
                 <span class="stat-label">Monthly Expenses</span>
                 <div class="stat-icon-badge icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
             </div>
-            <div class="stat-value text-danger">?{{ "%.2f"|format(stats.total_expenses) }}</div>
+            <div class="stat-value text-danger">₹{{ "%.2f"|format(stats.total_expenses) }}</div>
             <div class="stat-subtext text-dim">Total spent this month</div>
         </div>
 
@@ -71,7 +71,7 @@
                 <span class="stat-label">Savings</span>
                 <div class="stat-icon-badge icon-savings"><i class="fa-solid fa-piggy-bank"></i></div>
             </div>
-            <div class="stat-value text-indigo">?{{ "%.2f"|format(stats.savings_amount) }}</div>
+            <div class="stat-value text-indigo">₹{{ "%.2f"|format(stats.savings_amount) }}</div>
             <div class="stat-subtext">
                 <span class="badge badge-primary">{{ stats.savings_rate }}% savings rate</span>
             </div>
@@ -144,12 +144,12 @@
                                 <div class="progress-bar-fill fill-{{ b.status }}" style="width: {{ b.percent }}%;"></div>
                             </div>
                             <div class="flex-between text-xs text-muted">
-                                <span>Spent: <strong class="text-main">?{{ "%.2f"|format(b.spent) }}</strong> / ?{{ "%.2f"|format(b.budget_limit) }}</span>
+                                <span>Spent: <strong class="text-main">₹{{ "%.2f"|format(b.spent) }}</strong> / ₹{{ "%.2f"|format(b.budget_limit) }}</span>
                                 <span>
                                     {% if b.remaining >= 0 %}
-                                        <span class="text-emerald">?{{ "%.2f"|format(b.remaining) }} left</span>
+                                        <span class="text-emerald">₹{{ "%.2f"|format(b.remaining) }} left</span>
                                     {% else %}
-                                        <span class="text-danger font-bold">?{{ "%.2f"|format(b.remaining|abs) }} over</span>
+                                        <span class="text-danger font-bold">₹{{ "%.2f"|format(b.remaining|abs) }} over</span>
                                     {% endif %}
                                 </span>
                             </div>
@@ -199,7 +199,7 @@
                                             </span>
                                         </td>
                                         <td><span class="badge badge-secondary uppercase text-xs">{{ exp.payment_method }}</span></td>
-                                        <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
+                                        <td class="text-right font-bold text-danger">- ₹{{ "%.2f"|format(exp.amount) }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -233,7 +233,7 @@
                                     </div>
                                     <div>
                                         <div class="font-bold text-sm">{{ g.name }}</div>
-                                        <span class="text-xs text-muted">{{ g.member_count }} members &bull; Total spent: <strong class="text-danger">?{{ "%.2f"|format(g.total_spent) }}</strong></span>
+                                        <span class="text-xs text-muted">{{ g.member_count }} members &bull; Total spent: <strong class="text-danger">₹{{ "%.2f"|format(g.total_spent) }}</strong></span>
                                     </div>
                                 </div>
                                 <a href="{{ url_for('groups.group_detail_route', group_id=g.id) }}" class="btn btn-secondary btn-sm">Open &rarr;</a>
@@ -266,10 +266,10 @@
                     {% if prediction.has_sufficient_data %}
                         <div class="flex-between mb-2">
                             <span class="text-muted text-sm">Projected Month-End Spend:</span>
-                            <span class="font-bold text-danger text-xl">?{{ "%.2f"|format(prediction.projected_total) }}</span>
+                            <span class="font-bold text-danger text-xl">₹{{ "%.2f"|format(prediction.projected_total) }}</span>
                         </div>
                         <div class="flex-between text-xs text-muted mb-2">
-                            <span>Daily Velocity: <strong class="text-main">?{{ "%.2f"|format(prediction.daily_average) }}/day</strong></span>
+                            <span>Daily Velocity: <strong class="text-main">₹{{ "%.2f"|format(prediction.daily_average) }}/day</strong></span>
                             <span>Days Remaining: <strong class="text-main">{{ prediction.days_remaining }}</strong></span>
                         </div>
                         <p class="text-xs text-dim italic">{{ prediction.message }}</p>
@@ -355,13 +355,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Income (?)',
+                        label: 'Income (₹)',
                         data: incomeData,
                         backgroundColor: '#10b981',
                         borderRadius: 6
                     },
                     {
-                        label: 'Expenses (?)',
+                        label: 'Expenses (₹)',
                         data: expenseData,
                         backgroundColor: '#ef4444',
                         borderRadius: 6

@@ -34,7 +34,7 @@
             <div class="stat-icon-wrap icon-balance"><i class="fa-solid fa-calculator"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Estimated Total</span>
-                <h2 class="stat-value text-indigo">?{{ "%.2f"|format(estimated_total) }}</h2>
+                <h2 class="stat-value text-indigo">₹{{ "%.2f"|format(estimated_total) }}</h2>
                 <span class="stat-hint">Sum of (Qty &times; Estimated Price)</span>
             </div>
         </div>
@@ -42,7 +42,7 @@
             <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-cart-arrow-down"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Actual Total (Purchased)</span>
-                <h2 class="stat-value text-emerald">?{{ "%.2f"|format(actual_total) }}</h2>
+                <h2 class="stat-value text-emerald">₹{{ "%.2f"|format(actual_total) }}</h2>
                 <span class="stat-hint">{{ purchased_count }} of {{ total_count }} items purchased</span>
             </div>
         </div>
@@ -51,7 +51,7 @@
             <div class="stat-meta">
                 <span class="stat-label">Difference / Variance</span>
                 <h2 class="stat-value {% if difference <= 0 %}text-emerald{% else %}text-danger{% endif %}">
-                    {{ "?+%.2f (Over)"|format(difference) if difference > 0 else "?%.2f (Under/Match)"|format(difference) }}
+                    {{ "₹+%.2f (Over)"|format(difference) if difference > 0 else "₹%.2f (Under/Match)"|format(difference) }}
                 </h2>
                 <span class="stat-hint">Actual vs Estimated</span>
             </div>
@@ -80,9 +80,9 @@
                                         <div class="font-bold item-title">{{ item.item_name }}</div>
                                         <span class="text-xs text-muted">
                                             Qty: <strong>{{ item.quantity }}</strong> &bull; 
-                                            Est: ?{{ "%.2f"|format(item.estimated_price) }}
+                                            Est: ₹{{ "%.2f"|format(item.estimated_price) }}
                                             {% if item.actual_price is not none %}
-                                                &bull; <span class="text-emerald">Actual: ?{{ "%.2f"|format(item.actual_price) }}</span>
+                                                &bull; <span class="text-emerald">Actual: ₹{{ "%.2f"|format(item.actual_price) }}</span>
                                             {% endif %}
                                             {% if item.assigned_name %}
                                                 &bull; <span class="text-primary">Assigned: {{ item.assigned_name }}</span>
@@ -127,7 +127,7 @@
                             <input type="number" min="1" name="quantity" class="form-control" value="1" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Estimated Price per Unit (?)</label>
+                            <label class="form-label">Estimated Price per Unit (₹)</label>
                             <input type="number" step="0.01" min="0" name="estimated_price" class="form-control" placeholder="0.00" value="0.00">
                         </div>
                     </div>

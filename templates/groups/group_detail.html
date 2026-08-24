@@ -25,7 +25,7 @@
             <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-receipt"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Total Group Spending</span>
-                <h2 class="stat-value text-danger">?{{ "%.2f"|format(total_group_spent) }}</h2>
+                <h2 class="stat-value text-danger">₹{{ "%.2f"|format(total_group_spent) }}</h2>
                 <span class="stat-hint">{{ expenses|length }} shared expenses</span>
             </div>
         </div>
@@ -75,14 +75,14 @@
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="font-bold text-danger">?{{ "%.2f"|format(exp.amount) }}</div>
+                                            <div class="font-bold text-danger">₹{{ "%.2f"|format(exp.amount) }}</div>
                                             <span class="badge badge-secondary text-xs uppercase">{{ exp.split_type }} split</span>
                                         </div>
                                     </div>
                                     <div class="expense-participants-list text-xs text-muted pt-2 border-top">
                                         <span class="font-semibold">Split between:</span>
                                         {% for p in exp.participants %}
-                                            <span class="participant-chip">{{ p.name }} (?{{ "%.2f"|format(p.share_amount) }})</span>
+                                            <span class="participant-chip">{{ p.name }} (₹{{ "%.2f"|format(p.share_amount) }})</span>
                                         {% endfor %}
                                         
                                         {% if exp.paid_by == current_user_id or group.user_role == 'admin' %}
@@ -121,15 +121,15 @@
                                     <div class="avatar-circle">{{ b.name[0]|upper }}</div>
                                     <div>
                                         <div class="font-semibold">{{ b.name }} {% if uid == current_user_id %}(You){% endif %}</div>
-                                        <span class="text-xs text-muted">Paid ?{{ "%.2f"|format(b.paid) }} &bull; Owed ?{{ "%.2f"|format(b.owed) }}</span>
+                                        <span class="text-xs text-muted">Paid ₹{{ "%.2f"|format(b.paid) }} &bull; Owed ₹{{ "%.2f"|format(b.owed) }}</span>
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     {% if b.balance > 0 %}
-                                        <span class="font-bold text-emerald">+ ?{{ "%.2f"|format(b.balance) }}</span>
+                                        <span class="font-bold text-emerald">+ ₹{{ "%.2f"|format(b.balance) }}</span>
                                         <div class="text-xs text-emerald">gets back</div>
                                     {% elif b.balance < 0 %}
-                                        <span class="font-bold text-danger">- ?{{ "%.2f"|format(b.balance|abs) }}</span>
+                                        <span class="font-bold text-danger">- ₹{{ "%.2f"|format(b.balance|abs) }}</span>
                                         <div class="text-xs text-danger">owes</div>
                                     {% else %}
                                         <span class="font-bold text-muted">?0.00</span>

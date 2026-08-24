@@ -8,7 +8,7 @@
             <p class="text-muted">Manage recurring subscriptions, rent, bills, and SIP payments</p>
         </div>
         <div>
-            <span class="badge badge-primary"><i class="fa-solid fa-calculator"></i> Est. Monthly: ?{{ "%.2f"|format(total_monthly) }}</span>
+            <span class="badge badge-primary"><i class="fa-solid fa-calculator"></i> Est. Monthly: ₹{{ "%.2f"|format(total_monthly) }}</span>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
                                     </div>
                                 </div>
                                 <div class="recurring-right-actions flex-align-gap">
-                                    <span class="font-bold text-danger">?{{ "%.2f"|format(p.amount) }}</span>
+                                    <span class="font-bold text-danger">₹{{ "%.2f"|format(p.amount) }}</span>
                                     <form action="{{ url_for('finance.toggle_recurring_route', recurring_id=p.id) }}" method="POST" style="display:inline;">
                                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm {{ 'btn-secondary' if p.is_active else 'btn-ghost' }}" title="Toggle Status">
@@ -74,7 +74,7 @@
 
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label class="form-label">Amount (?) *</label>
+                            <label class="form-label">Amount (₹) *</label>
                             <input type="number" step="0.01" min="1" name="amount" class="form-control" placeholder="0.00" required>
                         </div>
                         <div class="form-group">

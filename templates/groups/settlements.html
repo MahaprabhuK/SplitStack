@@ -62,7 +62,7 @@
                                             <i class="fa-solid fa-arrow-right mx-2 text-dim"></i>
                                             <span class="text-emerald">{{ s.receiver_name }}</span>
                                         </div>
-                                        <span class="text-xs text-muted">Amount to settle: <strong>?{{ "%.2f"|format(s.amount) }}</strong></span>
+                                        <span class="text-xs text-muted">Amount to settle: <strong>₹{{ "%.2f"|format(s.amount) }}</strong></span>
                                     </div>
                                 </div>
                                 <div>
@@ -106,7 +106,7 @@
                                     <span class="text-xs text-muted">{{ h.settled_at.strftime('%d %b %Y, %I:%M %p') if h.settled_at else 'Completed' }}</span>
                                 </div>
                                 <div class="font-bold text-emerald">
-                                    ?{{ "%.2f"|format(h.amount) }}
+                                    ₹{{ "%.2f"|format(h.amount) }}
                                 </div>
                             </div>
                         {% endfor %}

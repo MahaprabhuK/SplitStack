@@ -24,7 +24,7 @@
             <div class="stat-icon-wrap icon-income"><i class="fa-solid fa-wallet"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Total Lifetime Income</span>
-                <h2 class="stat-value text-emerald">?{{ "%.2f"|format(overview.total_income) }}</h2>
+                <h2 class="stat-value text-emerald">₹{{ "%.2f"|format(overview.total_income) }}</h2>
                 <span class="stat-hint">All recorded earnings</span>
             </div>
         </div>
@@ -32,7 +32,7 @@
             <div class="stat-icon-wrap icon-expense"><i class="fa-solid fa-arrow-trend-down"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Total Personal Expenses</span>
-                <h2 class="stat-value text-danger">?{{ "%.2f"|format(overview.total_expenses) }}</h2>
+                <h2 class="stat-value text-danger">₹{{ "%.2f"|format(overview.total_expenses) }}</h2>
                 <span class="stat-hint">All logged personal spend</span>
             </div>
         </div>
@@ -40,7 +40,7 @@
             <div class="stat-icon-wrap icon-groups"><i class="fa-solid fa-users"></i></div>
             <div class="stat-meta">
                 <span class="stat-label">Shared Group Share</span>
-                <h2 class="stat-value text-amber">?{{ "%.2f"|format(overview.total_group_spending) }}</h2>
+                <h2 class="stat-value text-amber">₹{{ "%.2f"|format(overview.total_group_spending) }}</h2>
                 <span class="stat-hint">Your share in group bills</span>
             </div>
         </div>
@@ -49,7 +49,7 @@
             <div class="stat-meta">
                 <span class="stat-label">Net Balance & Savings</span>
                 <h2 class="stat-value {% if overview.net_balance >= 0 %}text-emerald{% else %}text-danger{% endif %}">
-                    ?{{ "%.2f"|format(overview.net_balance) }}
+                    ₹{{ "%.2f"|format(overview.net_balance) }}
                 </h2>
                 <span class="stat-hint">Savings Rate: {{ overview.savings_rate }}%</span>
             </div>
@@ -107,7 +107,7 @@
                                                 <i class="fa-solid fa-{{ c.category_icon }}"></i> {{ c.category_name }}
                                             </span>
                                         </td>
-                                        <td class="text-right font-bold">?{{ "%.2f"|format(c.amount) }}</td>
+                                        <td class="text-right font-bold">₹{{ "%.2f"|format(c.amount) }}</td>
                                         <td class="text-right font-semibold text-primary">{{ c.percentage }}%</td>
                                     </tr>
                                 {% endfor %}
@@ -136,7 +136,7 @@
                                 <div class="flex-between text-sm mb-1">
                                     <span class="font-semibold">{{ b.category_name or 'Overall Monthly Limit' }}</span>
                                     <span class="text-xs {% if b.status in ('danger', 'warning') %}text-danger{% else %}text-emerald{% endif %}">
-                                        ?{{ "%.2f"|format(b.spent) }} / ?{{ "%.2f"|format(b.budget_limit) }} ({{ b.actual_percent }}%)
+                                        ₹{{ "%.2f"|format(b.spent) }} / ₹{{ "%.2f"|format(b.budget_limit) }} ({{ b.actual_percent }}%)
                                     </span>
                                 </div>
                                 <div class="progress-bar-bg">
@@ -175,13 +175,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Income (?)',
+                        label: 'Income (₹)',
                         data: incomeData,
                         backgroundColor: '#10b981',
                         borderRadius: 6
                     },
                     {
-                        label: 'Expenses (?)',
+                        label: 'Expenses (₹)',
                         data: expenseData,
                         backgroundColor: '#ef4444',
                         borderRadius: 6

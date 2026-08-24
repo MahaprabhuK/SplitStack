@@ -57,7 +57,7 @@
     <div class="stat-card glass-card mb-4 flex-between" style="flex-direction: row; align-items: center;">
         <div>
             <span class="stat-label">Filtered Expenses Total</span>
-            <div class="stat-value text-danger">?{{ "%.2f"|format(total_amount) }}</div>
+            <div class="stat-value text-danger">₹{{ "%.2f"|format(total_amount) }}</div>
         </div>
         <div>
             <span class="badge badge-secondary">{{ expenses|length }} transaction(s) found</span>
@@ -91,7 +91,7 @@
                                         </span>
                                     </td>
                                     <td><span class="badge badge-secondary uppercase text-xs">{{ exp.payment_method }}</span></td>
-                                    <td class="text-right font-bold text-danger">- ?{{ "%.2f"|format(exp.amount) }}</td>
+                                    <td class="text-right font-bold text-danger">- ₹{{ "%.2f"|format(exp.amount) }}</td>
                                     <td class="text-center">
                                         <div class="flex-gap" style="justify-content: center;">
                                             <a href="{{ url_for('finance.edit_expense_route', expense_id=exp.id) }}" class="btn-icon text-muted" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
