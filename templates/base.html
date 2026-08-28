@@ -36,7 +36,7 @@
             <li><a href="{{ url_for('groups.groups_list') }}" class="nav-link {% if request.endpoint and 'groups' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-users"></i><span>Groups</span></a></li>
             <li><a href="{{ url_for('shopping.shopping_lists_route') }}" class="nav-link {% if request.endpoint and 'shopping' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-cart-shopping"></i><span>Shopping</span></a></li>
             <li><a href="{{ url_for('analytics.analytics_dashboard') }}" class="nav-link {% if request.endpoint and 'analytics' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></a></li>
-            <li><a href="{{ url_for('ocr.receipt_scan') }}" class="nav-link {% if request.endpoint and 'ocr' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-camera"></i><span>OCR Receipts</span></a></li>
+            <li><a href="{{ url_for('ocr.receipt_scan') }}" class="nav-link {% if request.endpoint and 'ocr' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-receipt"></i><span>OCR Receipts</span></a></li>
             <li><a href="{{ url_for('main.dashboard') }}#insights" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Smart Insights</span></a></li>
         </ul>
         <p class="sidebar-label">Tools</p>
