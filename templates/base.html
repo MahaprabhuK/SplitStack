@@ -68,6 +68,9 @@
 <div class="flash-container" id="flashContainer">{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }} fade-in" role="alert"><div class="alert-icon">{% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>{% elif category == 'danger' or category == 'error' %}<i class="fa-solid fa-circle-exclamation"></i>{% elif category == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>{% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}</div><div class="alert-text">{{ message }}</div><button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button></div>{% endfor %}{% endwith %}</div>
 <main class="main-wrapper">{% block content %}{% endblock %}</main>
 <footer class="footer"><div class="footer-container"><div class="footer-brand"><i class="fa-solid fa-layer-group brand-icon"></i><span class="footer-title">SplitStack</span><span class="footer-version">v2.0 Full Edition</span></div><div class="footer-copy">&copy; {{ now_year }} SplitStack. Smart financial management.</div></div></footer>
+<!-- jQuery 3.7.1 CDN -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<!-- Core Application JavaScript -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block extra_js %}{% endblock %}
 </body>

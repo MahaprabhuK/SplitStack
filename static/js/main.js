@@ -1,94 +1,139 @@
 /**
  * SplitStack - Core JavaScript
+ * Enhanced with jQuery 3.7.1
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-    const welcomeGreeting = document.getElementById('welcomeGreeting');
-    if (welcomeGreeting) {
+// Verification check to confirm jQuery is loaded and available
+if (typeof jQuery !== 'undefined') {
+    console.log('SplitStack jQuery loaded');
+}
+
+$(document).ready(function ($) {
+    // 1. Dynamic Greeting
+    const $welcomeGreeting = $('#welcomeGreeting');
+    if ($welcomeGreeting.length) {
         const hour = new Date().getHours();
-        welcomeGreeting.textContent = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        $welcomeGreeting.text(hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
     }
 
-    // Mobile navigation drawer
-    const navToggle = document.getElementById('navToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarScrim = document.getElementById('sidebarScrim');
-    const sidebarClose = document.getElementById('sidebarClose');
-
+    // 2. Mobile Navigation Drawer
+    const $sidebar = $('#sidebar');
+    const $sidebarScrim = $('#sidebarScrim');
     const closeSidebar = () => {
-        sidebar?.classList.remove('open');
-        sidebarScrim?.classList.remove('open');
+        $sidebar.removeClass('open');
+        $sidebarScrim.removeClass('open');
     };
-    if (navToggle && sidebar) {
-        navToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-            sidebarScrim?.classList.toggle('open');
+
+    $('#navToggle').on('click', function (e) {
+        e.stopPropagation();
+        $sidebar.toggleClass('open');
+        $sidebarScrim.toggleClass('open');
+    });
+
+    $('#sidebarClose, #sidebarScrim').on('click', closeSidebar);
+    $sidebar.find('a').on('click', closeSidebar);
+
+    // 3. Password Visibility Toggles
+    $(document).on('click', '.btn-toggle-password, #togglePasswordBtn, #toggleRegPasswordBtn', function (e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const $wrap = $btn.closest('.password-input-wrap');
+        const $input = $wrap.length ? $wrap.find('input') : $btn.siblings('input');
+        const $icon = $btn.find('i');
+
+        if ($input.length) {
+            const isPassword = $input.attr('type') === 'password';
+            $input.attr('type', isPassword ? 'text' : 'password');
+            $icon.toggleClass('fa-eye fa-eye-slash');
+        }
+    });
+
+    // 4. Alert Auto-Dismiss & Smooth Close Handling
+    const $alerts = $('.alert');
+    if ($alerts.length) {
+        $alerts.each(function () {
+            const $alert = $(this);
+            const isDanger = $alert.hasClass('alert-danger') || $alert.hasClass('alert-error');
+            const dismissDelay = isDanger ? 8000 : 4500;
+            $alert.delay(dismissDelay).fadeOut(600, function () {
+                $(this).remove();
+            });
         });
     }
-    sidebarClose?.addEventListener('click', closeSidebar);
-    sidebarScrim?.addEventListener('click', closeSidebar);
-    sidebar?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeSidebar));
 
-    // Password visibility toggles
-    const togglePasswordBtn = document.getElementById('togglePasswordBtn');
-    const passwordInput = document.getElementById('password');
-    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
-
-    if (togglePasswordBtn && passwordInput && togglePasswordIcon) {
-        togglePasswordBtn.addEventListener('click', () => {
-            const isPassword = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-            togglePasswordIcon.classList.toggle('fa-eye', !isPassword);
-            togglePasswordIcon.classList.toggle('fa-eye-slash', isPassword);
+    $(document).on('click', '.alert-close', function (e) {
+        e.preventDefault();
+        $(this).closest('.alert').stop(true, true).fadeOut(300, function () {
+            $(this).remove();
         });
-    }
+    });
 
-    const toggleRegPasswordBtn = document.getElementById('toggleRegPasswordBtn');
-    const regPasswordInput = document.getElementById('password');
-    const toggleRegPasswordIcon = document.getElementById('toggleRegPasswordIcon');
+    // 5. Delete & Destructive Action Confirmation
+    $(document).on('submit', 'form[data-confirm]', function (e) {
+        const msg = $(this).data('confirm') || 'Are you sure you want to proceed with this action?';
+        if (!confirm(msg)) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
-    if (toggleRegPasswordBtn && regPasswordInput && toggleRegPasswordIcon) {
-        toggleRegPasswordBtn.addEventListener('click', () => {
-            const isPassword = regPasswordInput.getAttribute('type') === 'password';
-            regPasswordInput.setAttribute('type', isPassword ? 'text' : 'password');
-            toggleRegPasswordIcon.classList.toggle('fa-eye', !isPassword);
-            toggleRegPasswordIcon.classList.toggle('fa-eye-slash', isPassword);
-        });
-    }
+    $(document).on('click', '.btn-delete, .delete-btn, [data-confirm-delete]', function (e) {
+        const msg = $(this).data('confirm-delete') || $(this).data('confirm') || 'Are you sure you want to delete this?';
+        if (!confirm(msg)) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
-    // Theme preference is local to the browser and does not affect financial data.
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
+    // 6. Shopping Checklist Interactive Feedback
+    $(document).on('click', '.btn-check-toggle', function () {
+        const $btn = $(this);
+        const $row = $btn.closest('.item-row');
+        $row.toggleClass('item-purchased');
+        $btn.toggleClass('checked');
+        const $icon = $btn.find('i');
+        if ($btn.hasClass('checked')) {
+            $icon.removeClass('fa-circle text-muted').addClass('fa-circle-check text-emerald');
+        } else {
+            $icon.removeClass('fa-circle-check text-emerald').addClass('fa-circle text-muted');
+        }
+    });
+
+    // 7. Theme Preference Management
+    const $themeToggle = $('#themeToggle');
+    if ($themeToggle.length) {
         const savedTheme = localStorage.getItem('splitstack-theme');
-        if (savedTheme === 'light') document.body.classList.add('theme-light');
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('theme-light');
-            localStorage.setItem('splitstack-theme', document.body.classList.contains('theme-light') ? 'light' : 'dark');
+        if (savedTheme === 'light') {
+            $('body').addClass('theme-light');
+        }
+        $themeToggle.on('click', function () {
+            $('body').toggleClass('theme-light');
+            const isLight = $('body').hasClass('theme-light');
+            localStorage.setItem('splitstack-theme', isLight ? 'light' : 'dark');
         });
     }
 
-    // Search visible navigation labels without changing route behavior.
-    const globalSearch = document.getElementById('globalSearch');
-    globalSearch?.addEventListener('input', (event) => {
-        const query = event.target.value.toLowerCase().trim();
-        document.querySelectorAll('.sidebar .nav-links li').forEach((item) => {
-            item.hidden = query && !item.textContent.toLowerCase().includes(query);
+    // 8. Global Workspace Search in Navigation
+    $('#globalSearch').on('input', function () {
+        const query = $(this).val().toLowerCase().trim();
+        $('.sidebar .nav-links li').each(function () {
+            const $item = $(this);
+            if (!query) {
+                $item.show();
+            } else {
+                const text = $item.text().toLowerCase();
+                $item.toggle(text.indexOf(query) !== -1);
+            }
         });
     });
 
-    // Notifications point to the page's existing flash messages when present.
-    document.getElementById('notificationButton')?.addEventListener('click', () => {
-        const firstAlert = document.querySelector('.alert');
-        if (firstAlert) firstAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-
-    // Auto-dismiss flash alerts after 5 seconds.
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach((alert) => {
-        setTimeout(() => {
-            alert.style.transition = 'opacity 0.5s ease';
-            alert.style.opacity = '0';
-            setTimeout(() => alert.remove(), 500);
-        }, 5000);
+    // 9. Quick Notification Scroll
+    $('#notificationButton').on('click', function () {
+        const $firstAlert = $('.alert').first();
+        if ($firstAlert.length) {
+            $('html, body').animate({
+                scrollTop: Math.max(0, $firstAlert.offset().top - 80)
+            }, 300);
+        }
     });
 });

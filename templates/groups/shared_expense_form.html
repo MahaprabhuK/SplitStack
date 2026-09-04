@@ -83,18 +83,13 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const radios = document.querySelectorAll('input[name="split_type"]');
-    const customInputs = document.querySelectorAll('.custom-share-input');
-
-    radios.forEach(radio => {
-        radio.addEventListener('change', () => {
-            if (radio.value === 'custom') {
-                customInputs.forEach(input => input.style.display = 'block');
-            } else {
-                customInputs.forEach(input => input.style.display = 'none');
-            }
-        });
+$(document).ready(function () {
+    $('input[name="split_type"]').on('change', function () {
+        if ($(this).val() === 'custom') {
+            $('.custom-share-input').show();
+        } else {
+            $('.custom-share-input').hide();
+        }
     });
 });
 </script>
