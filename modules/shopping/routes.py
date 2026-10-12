@@ -112,24 +112,42 @@ def convert_expense_route(list_id):
     amount_to_convert = data['actual_total'] if data['actual_total'] > 0 else data['estimated_total']
 
     if amount_to_convert <= 0:
-        flash('Cannot convert an empty or ?0.00 shopping list to an expense.', 'warning')
+        flash('Cannot convert an empty or ₹0.00 shopping list to an expense.', 'warning')
         return redirect(url_for('shopping.shopping_detail_route', list_id=list_id))
 
     today_str = datetime.now().strftime('%Y-%m-%d')
     title = f"Shopping: {sl['title']}"
 
+    # Prevent accidental duplicate conversions recorded on the same date
+    from database.db import query_db
     if sl['group_id']:
+        existing_shared = query_db("""
+            SELECT id FROM shared_expenses
+            WHERE group_id = ? AND title = ? AND expense_date = ? AND ABS(amount - ?) < 0.01
+        """, (sl['group_id'], title, today_str, amount_to_convert), one=True)
+        if existing_shared:
+            flash(f'A shared expense for "{title}" (₹{amount_to_convert:.2f}) was already recorded today in {sl["group_name"]}.', 'warning')
+            return redirect(url_for('shopping.shopping_detail_route', list_id=list_id))
+
         # Convert to shared group expense with equal split among group members
         members = get_group_members(sl['group_id'])
         participants = [{'user_id': m['user_id']} for m in members]
         add_shared_expense(sl['group_id'], user_id, title, amount_to_convert, None, today_str, 'equal', participants)
-        flash(f'Converted ?{amount_to_convert:.2f} to a shared expense in {sl["group_name"]}!', 'success')
+        flash(f'Converted ₹{amount_to_convert:.2f} to a shared expense in {sl["group_name"]}!', 'success')
         return redirect(url_for('groups.group_detail_route', group_id=sl['group_id']))
     else:
+        existing_personal = query_db("""
+            SELECT id FROM expenses
+            WHERE user_id = ? AND description = ? AND expense_date = ? AND ABS(amount - ?) < 0.01
+        """, (user_id, title, today_str, amount_to_convert), one=True)
+        if existing_personal:
+            flash(f'A personal expense for "{title}" (₹{amount_to_convert:.2f}) was already recorded today.', 'warning')
+            return redirect(url_for('shopping.shopping_detail_route', list_id=list_id))
+
         # Convert to personal expense
         with transaction():
             add_expense(user_id, None, amount_to_convert, title, today_str, 'upi', commit=False)
-        flash(f'Converted ?{amount_to_convert:.2f} to personal expenses!', 'success')
+        flash(f'Converted ₹{amount_to_convert:.2f} to personal expenses!', 'success')
         return redirect(url_for('finance.expenses'))
 
 @shopping_bp.route('/shopping/<int:list_id>/delete', methods=['POST'])

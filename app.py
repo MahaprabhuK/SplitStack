@@ -59,6 +59,10 @@ def create_app():
         }
 
     # Custom Error Handlers
+    @app.errorhandler(400)
+    def bad_request_error(error):
+        return render_template('errors/400.html'), 400
+
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('errors/404.html'), 404
@@ -74,4 +78,5 @@ app = create_app()
 if __name__ == '__main__':
     init_db()
     print(f" * SplitStack server running on http://127.0.0.1:5000 (Debug: {config.DEBUG})")
-    app.run(host='0.0.0.0', port=5000, debug=config.DEBUG)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=config.DEBUG)

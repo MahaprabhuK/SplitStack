@@ -28,7 +28,7 @@ def generate_smart_insights(user_id):
                 'icon': 'arrow-trend-up',
                 'color': 'danger',
                 'title': 'Spending Increase',
-                'message': f'Your expenses this month (?{c_total:.2f}) have increased by {diff_pct}% compared to last month (?{p_total:.2f}).'
+                'message': f'Your expenses this month (₹{c_total:.2f}) have increased by {diff_pct}% compared to last month (₹{p_total:.2f}).'
             })
         else:
             insights.append({
@@ -56,7 +56,7 @@ def generate_smart_insights(user_id):
             'icon': 'chart-pie',
             'color': 'indigo',
             'title': 'Highest Spending Category',
-            'message': f'{top_cat["name"]} is currently your highest expense category this month (?{float(top_cat["total"]):.2f}).'
+            'message': f'{top_cat["name"]} is currently your highest expense category this month (₹{float(top_cat["total"]):.2f}).'
         })
 
     # 3. Upcoming Recurring Payments
@@ -73,7 +73,7 @@ def generate_smart_insights(user_id):
             'icon': 'bell',
             'color': 'amber',
             'title': 'Upcoming Scheduled Bills',
-            'message': f'You have {count} recurring payment(s) totaling ?{total_due:.2f} due within the next 7 days.'
+            'message': f'You have {count} recurring payment(s) totaling ₹{total_due:.2f} due within the next 7 days.'
         })
 
     return insights

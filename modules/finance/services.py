@@ -1,3 +1,13 @@
+
+def _validate_date_str(date_str):
+    """Validate ISO YYYY-MM-DD date string."""
+    if not date_str:
+        return datetime.now().strftime('%Y-%m-%d'), None
+    try:
+        datetime.strptime(str(date_str).strip(), '%Y-%m-%d')
+        return str(date_str).strip(), None
+    except (ValueError, TypeError):
+        return None, "Invalid date format. Expected YYYY-MM-DD."
 from database.db import query_db, execute_db
 from datetime import datetime, date, timedelta
 
@@ -129,8 +139,9 @@ def add_expense(user_id, category_id, amount, description, expense_date, payment
     except (ValueError, TypeError):
         return None, "Please enter a valid expense amount."
 
-    if not expense_date:
-        expense_date = datetime.now().strftime('%Y-%m-%d')
+    expense_date, date_err = _validate_date_str(expense_date)
+    if date_err:
+        return None, date_err
 
     valid_methods = ('cash', 'card', 'upi', 'net_banking', 'other')
     if payment_method not in valid_methods:
@@ -229,8 +240,9 @@ def add_income(user_id, category_id, amount, source, income_date):
     if not source:
         return None, "Income source is required."
 
-    if not income_date:
-        income_date = datetime.now().strftime('%Y-%m-%d')
+    income_date, date_err = _validate_date_str(income_date)
+    if date_err:
+        return None, date_err
 
     income_id = execute_db("""
         INSERT INTO income (user_id, category_id, amount, source, income_date)
@@ -351,6 +363,11 @@ def set_budget(user_id, category_id, amount, month=None, year=None):
             return None, "Budget limit must be greater than zero."
     except (ValueError, TypeError):
         return None, "Please enter a valid budget amount."
+
+    if month < 1 or month > 12:
+        return None, "Month must be between 1 and 12."
+    if year < 2000 or year > 2100:
+        return None, "Year must be between 2000 and 2100."
 
     cat_id, category_error = validate_category(user_id, category_id, 'expense')
     if category_error:

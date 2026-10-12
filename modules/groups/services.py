@@ -29,7 +29,7 @@ def validate_group_users(group_id, user_ids):
 # ----------------------------------------------------
 def get_user_groups(user_id):
     """Get all groups a user is a member of."""
-    return query_db("""
+    groups = query_db("""
         SELECT g.id, g.name, g.description, g.created_by, g.created_at,
                gm.role, u.name AS creator_name,
                (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS member_count,
@@ -40,6 +40,7 @@ def get_user_groups(user_id):
         WHERE gm.user_id = ?
         ORDER BY g.created_at DESC
     """, (user_id,))
+    return [dict(g) for g in groups]
 
 def get_group_details(user_id, group_id):
     """Get group details if user is an authorized member."""
@@ -55,8 +56,12 @@ def get_group_details(user_id, group_id):
         JOIN users u ON g.created_by = u.id
         WHERE g.id = ?
     """, (group_id,), one=True)
-    group_data['user_role'] = membership['role']
-    return group_data, None
+    if not group_data:
+        return None, "Group not found."
+
+    group_dict = dict(group_data)
+    group_dict['user_role'] = membership['role']
+    return group_dict, None
 
 def create_group(creator_id, name, description=None):
     """Create a new group and add the creator as an admin."""
@@ -82,7 +87,7 @@ def create_group(creator_id, name, description=None):
 
 def get_group_members(group_id):
     """List all members of a group."""
-    return query_db("""
+    members = query_db("""
         SELECT gm.id AS membership_id, gm.user_id, gm.role, gm.joined_at,
                u.name, u.email
         FROM group_members gm
@@ -90,6 +95,7 @@ def get_group_members(group_id):
         WHERE gm.group_id = ?
         ORDER BY gm.role ASC, u.name ASC
     """, (group_id,))
+    return [dict(m) for m in members]
 
 def add_group_member_by_email(group_id, admin_user_id, member_email):
     """Add a registered user to the group by email address."""
@@ -116,7 +122,7 @@ def add_group_member_by_email(group_id, admin_user_id, member_email):
     return True, f"{user_to_add['name']} has been added to the group."
 
 def remove_group_member(group_id, admin_user_id, target_user_id):
-    """Remove a member from the group."""
+    """Remove a member from the group after verifying zero outstanding balance."""
     if admin_user_id == target_user_id:
         return False, "You cannot remove yourself. Use Leave Group instead."
 
@@ -124,15 +130,44 @@ def remove_group_member(group_id, admin_user_id, target_user_id):
     if not admin or admin['role'] != 'admin':
         return False, "Only group admins can remove members."
 
+    # Verify target user has zero net balance
+    balances = calculate_group_balances(group_id)
+    target_balance = balances.get(target_user_id, {}).get('balance', 0.0)
+    if abs(target_balance) >= 0.01:
+        return False, f"Cannot remove member with outstanding balance (₹{target_balance:.2f}). Please settle debts first."
+
     execute_db("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, target_user_id))
     return True, None
+
+def leave_group(group_id, user_id):
+    """Allow a member to leave group if their balance is zero."""
+    membership = query_db("SELECT role FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, user_id), one=True)
+    if not membership:
+        return False, "You are not a member of this group."
+
+    balances = calculate_group_balances(group_id)
+    user_balance = balances.get(user_id, {}).get('balance', 0.0)
+    if abs(user_balance) >= 0.01:
+        return False, f"Cannot leave group with outstanding balance (₹{user_balance:.2f}). Please settle debts first."
+
+    # If admin, ensure there is at least one other admin if other members exist
+    if membership['role'] == 'admin':
+        admin_row = query_db("SELECT COUNT(*) as count FROM group_members WHERE group_id = ? AND role = 'admin'", (group_id,), one=True)
+        total_row = query_db("SELECT COUNT(*) as count FROM group_members WHERE group_id = ?", (group_id,), one=True)
+        admin_count = admin_row['count'] if admin_row else 1
+        total_count = total_row['count'] if total_row else 1
+        if admin_count <= 1 and total_count > 1:
+            return False, "You are the sole group admin. Promote another member to admin before leaving."
+
+    execute_db("DELETE FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, user_id))
+    return True, "You have left the group."
 
 # ----------------------------------------------------
 # Shared Expenses & Splitting
 # ----------------------------------------------------
 def get_group_expenses(group_id):
     """Get all shared expenses for a group."""
-    expenses = query_db("""
+    expense_rows = query_db("""
         SELECT se.*, u.name AS payer_name,
                c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM shared_expenses se
@@ -142,15 +177,18 @@ def get_group_expenses(group_id):
         ORDER BY se.expense_date DESC, se.id DESC
     """, (group_id,))
 
+    expenses = []
     # Attach participants to each expense
-    for exp in expenses:
+    for row in expense_rows:
+        exp = dict(row)
         participants = query_db("""
             SELECT ep.user_id, ep.share_amount, u.name
             FROM expense_participants ep
             JOIN users u ON ep.user_id = u.id
             WHERE ep.shared_expense_id = ?
         """, (exp['id'],))
-        exp['participants'] = participants
+        exp['participants'] = [dict(p) for p in participants]
+        expenses.append(exp)
 
     return expenses
 
@@ -181,6 +219,14 @@ def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, e
     if category_error:
         return None, category_error
 
+    for p in participant_shares:
+        try:
+            s_amt = float(p.get('share_amount', 0))
+            if s_amt < 0:
+                return None, "Participant share amounts cannot be negative."
+        except (ValueError, TypeError):
+            return None, "Invalid participant share amount."
+
     # Validate and calculate splits
     if split_type == 'equal':
         equal_share = round(total_amount / len(participant_shares), 2)
@@ -199,7 +245,7 @@ def add_shared_expense(group_id, paid_by_id, title, total_amount, category_id, e
     # Validate sum equals total_amount within 0.05
     sum_shares = sum(float(p['share_amount']) for p in participant_shares)
     if abs(sum_shares - total_amount) > 0.05:
-        return None, f"Sum of participant shares (?{sum_shares:.2f}) must equal the total expense amount (?{total_amount:.2f})."
+        return None, f"Sum of participant shares (₹{sum_shares:.2f}) must equal the total expense amount (₹{total_amount:.2f})."
 
     if not expense_date:
         expense_date = datetime.now().strftime('%Y-%m-%d')
@@ -226,7 +272,7 @@ def delete_shared_expense(group_id, user_id, expense_id):
     exp = query_db("SELECT * FROM shared_expenses WHERE id = ? AND group_id = ?", (expense_id, group_id), one=True)
     if not exp:
         return False, "Expense not found."
-    
+
     admin = query_db("SELECT role FROM group_members WHERE group_id = ? AND user_id = ?", (group_id, user_id), one=True)
     if exp['paid_by'] != user_id and (not admin or admin['role'] != 'admin'):
         return False, "You do not have permission to delete this expense."

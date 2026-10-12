@@ -13,6 +13,12 @@
             <a href="{{ url_for('groups.add_group_expense_route', group_id=group.id) }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Add Shared Expense
             </a>
+            {% if current_user_id != group.created_by %}
+            <form action="{{ url_for('groups.leave_group_route', group_id=group.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group?');" style="display:inline;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Leave Group</button>
+            </form>
+            {% endif %}
             <a href="{{ url_for('groups.settlements_route', group_id=group.id) }}" class="btn btn-secondary">
                 <i class="fa-solid fa-scale-balanced"></i> Debt Simplification
             </a>
@@ -118,7 +124,7 @@
                         {% for uid, b in balances.items() %}
                             <div class="balance-item-row flex-between p-2 mb-2 glass-card">
                                 <div class="flex-align-gap">
-                                    <div class="avatar-circle">{{ b.name[0]|upper }}</div>
+                                    <div class="avatar-circle">{{ (b.name or 'U')[0]|upper }}</div>
                                     <div>
                                         <div class="font-semibold">{{ b.name }} {% if uid == current_user_id %}(You){% endif %}</div>
                                         <span class="text-xs text-muted">Paid ₹{{ "%.2f"|format(b.paid) }} &bull; Owed ₹{{ "%.2f"|format(b.owed) }}</span>
@@ -132,7 +138,7 @@
                                         <span class="font-bold text-danger">- ₹{{ "%.2f"|format(b.balance|abs) }}</span>
                                         <div class="text-xs text-danger">owes</div>
                                     {% else %}
-                                        <span class="font-bold text-muted">?0.00</span>
+                                        <span class="font-bold text-muted">₹0.00</span>
                                         <div class="text-xs text-muted">settled</div>
                                     {% endif %}
                                 </div>
@@ -153,7 +159,7 @@
                         {% for m in members %}
                             <div class="member-item flex-between p-2 mb-1">
                                 <div class="flex-align-gap">
-                                    <div class="avatar-circle">{{ m.name[0]|upper }}</div>
+                                    <div class="avatar-circle">{{ (m.name or 'U')[0]|upper }}</div>
                                     <div>
                                         <span class="font-medium">{{ m.name }}</span>
                                         <span class="text-xs text-dim block">{{ m.email }}</span>

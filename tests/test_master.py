@@ -218,3 +218,10 @@ Thank you!
 
 if __name__ == '__main__':
     run_master_test()
+
+import unittest
+
+class MasterSuiteTests(unittest.TestCase):
+    """Integrates master 8-phase test into unittest discover runner."""
+    def test_master_all_phases(self):
+        run_master_test()

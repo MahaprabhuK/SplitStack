@@ -109,7 +109,7 @@
 
                     <div class="form-group">
                         <label class="form-label"><i class="fa-solid fa-tag"></i> Category</label>
-                        <select name="category_id" class="form-control" required>
+                        <select name="category_id" class="form-control">
                             <option value="">-- Overall Monthly Limit --</option>
                             {% for cat in categories %}
                                 <option value="{{ cat.id }}">{{ cat.name }}</option>

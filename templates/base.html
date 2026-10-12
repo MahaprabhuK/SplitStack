@@ -39,16 +39,11 @@
             <li><a href="{{ url_for('ocr.receipt_scan') }}" class="nav-link {% if request.endpoint and 'ocr' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-receipt"></i><span>OCR Receipts</span></a></li>
             <li><a href="{{ url_for('main.dashboard') }}#insights" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Smart Insights</span></a></li>
         </ul>
-        <p class="sidebar-label">Tools</p>
-        <ul class="nav-links nav-links-muted">
-            <li><span class="nav-link nav-link-disabled"><i class="fa-regular fa-calendar"></i><span>Calendar</span><small>Soon</small></span></li>
-            <li><span class="nav-link nav-link-disabled"><i class="fa-solid fa-file-chart-column"></i><span>Reports</span><small>Soon</small></span></li>
-            <li><span class="nav-link nav-link-disabled"><i class="fa-solid fa-file-export"></i><span>Export Data</span><small>Soon</small></span></li>
-        </ul>
+
         <p class="sidebar-label">Settings</p>
         <ul class="nav-links">
             <li><a href="{{ url_for('auth.profile') }}" class="nav-link {% if request.endpoint == 'auth.profile' %}active{% endif %}"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
-            <li><span class="nav-link nav-link-disabled"><i class="fa-regular fa-circle-question"></i><span>Help & Support</span><small>Soon</small></span></li>
+
         </ul>
     </div>
     <div class="sidebar-user">

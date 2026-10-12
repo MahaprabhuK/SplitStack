@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Bad Request - SplitStack{% endblock %}
+{% block content %}
+<div class="container text-center py-5">
+    <div class="empty-state p-5 glass-card" style="max-width: 500px; margin: 3rem auto;">
+        <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 3.5rem; margin-bottom: 1rem;"></i>
+        <h1 class="h3 font-bold mb-2">400 - Bad Request</h1>
+        <p class="text-muted text-sm mb-4">Your session token may have expired or the request was invalid. Please return to the previous page and try again.</p>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary"><i class="fa-solid fa-house"></i> Return to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

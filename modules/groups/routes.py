@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from modules.auth.utils import login_required
 from modules.groups.services import (
+    leave_group,
     get_user_groups, get_group_details, create_group, get_group_members,
     add_group_member_by_email, remove_group_member,
     get_group_expenses, add_shared_expense, delete_shared_expense,
@@ -132,17 +133,30 @@ def add_group_expense_route(group_id):
             for pid in participant_ids:
                 share_val = request.form.get(f'share_{pid}', '0')
                 try:
-                    share_amt = float(share_val)
+                    share_amt = max(0.0, float(share_val or 0))
                 except ValueError:
                     share_amt = 0.0
                 participant_shares.append({'user_id': int(pid), 'share_amount': share_amt})
         elif split_type == 'unequal':
-            # Unequal split via percentages
-            total_pct = sum(float(request.form.get(f'percent_{pid}', 0)) for pid in participant_ids)
-            tot_amt = float(amount or 0)
+            # Unequal split via percentages with safe parsing
+            pcts = {}
             for pid in participant_ids:
-                pct = float(request.form.get(f'percent_{pid}', 0))
-                share_amt = round((pct / total_pct * tot_amt) if total_pct > 0 else 0, 2)
+                try:
+                    pcts[pid] = max(0.0, float(request.form.get(f'percent_{pid}', 0) or 0))
+                except ValueError:
+                    pcts[pid] = 0.0
+            total_pct = sum(pcts.values())
+            try:
+                tot_amt = float(amount or 0)
+            except ValueError:
+                tot_amt = 0.0
+            running_sum = 0.0
+            for idx, pid in enumerate(participant_ids):
+                if idx == len(participant_ids) - 1 and total_pct > 0:
+                    share_amt = round(tot_amt - running_sum, 2)
+                else:
+                    share_amt = round((pcts[pid] / total_pct * tot_amt) if total_pct > 0 else 0, 2)
+                    running_sum += share_amt
                 participant_shares.append({'user_id': int(pid), 'share_amount': share_amt})
 
         expense_id, err = add_shared_expense(group_id, paid_by, title, amount, category_id, expense_date, split_type, participant_shares, user_id)
@@ -210,5 +224,19 @@ def record_settlement_route(group_id):
     if error:
         flash(error, 'danger')
     else:
-        flash(f'Settlement of ?{amount:.2f} marked as paid successfully!', 'success')
+        flash(f'Settlement of ₹{amount:.2f} marked as paid successfully!', 'success')
     return redirect(url_for('groups.settlements_route', group_id=group_id))
+
+
+@groups_bp.route('/groups/<int:group_id>/leave', methods=['POST'])
+@login_required
+def leave_group_route(group_id):
+    """Leave a group if member has zero debt balance."""
+    user_id = session['user_id']
+    success, msg = leave_group(group_id, user_id)
+    if success:
+        flash(msg, 'info')
+        return redirect(url_for('groups.groups_list'))
+    else:
+        flash(msg, 'danger')
+        return redirect(url_for('groups.group_detail_route', group_id=group_id))
