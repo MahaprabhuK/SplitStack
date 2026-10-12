@@ -12,7 +12,7 @@ main_bp = Blueprint('main', __name__, template_folder='../../templates')
 @main_bp.route('/')
 def index():
     """Root redirect route."""
-    if 'user_id' in session:
+    if getattr(g, 'user', None) is not None:
         return redirect(url_for('main.dashboard'))
     return redirect(url_for('auth.login'))
 

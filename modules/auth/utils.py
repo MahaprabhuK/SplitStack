@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import session, redirect, url_for, flash, request
+from flask import session, redirect, url_for, flash, request, g
 import hmac
 import re
 import secrets
@@ -23,7 +23,8 @@ def login_required(view_func):
     """Decorator to protect routes requiring authentication."""
     @wraps(view_func)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
+        if getattr(g, 'user', None) is None:
+            session.clear()
             flash('Please log in to access this page.', 'warning')
             return redirect(url_for('auth.login', next=request.path))
         return view_func(*args, **kwargs)

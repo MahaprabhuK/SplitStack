@@ -7,7 +7,7 @@ auth_bp = Blueprint('auth', __name__, template_folder='../../templates')
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """User Registration Route."""
-    if 'user_id' in session:
+    if getattr(g, 'user', None) is not None:
         return redirect(url_for('main.dashboard'))
 
     if request.method == 'POST':
@@ -35,7 +35,7 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """User Login Route."""
-    if 'user_id' in session:
+    if getattr(g, 'user', None) is not None:
         return redirect(url_for('main.dashboard'))
 
     next_page = request.args.get('next')
@@ -78,5 +78,5 @@ def logout():
 @login_required
 def profile():
     """User Profile View."""
-    user = get_user_by_id(session['user_id'])
+    user = g.user
     return render_template('auth/profile.html', user=user)
