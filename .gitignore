@@ -1,11 +1,23 @@
+# Python (legacy Flask app)
 __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Node
+node_modules/
+npm-debug.log*
+coverage/
+
+# Secrets & editor
 .env
 .vscode/
 *.log
 
+# Local data
 database/*.db
+uploads/receipts/*
+!uploads/receipts/test_invoice_*
 
-database/*.db
+# Office lock files
+~$*

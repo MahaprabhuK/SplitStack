@@ -1,0 +1,90 @@
+{
+  "project": "SplitStack",
+  "title": "SplitStack Refurbishment - Prompt Log",
+  "subtitle": "Every prompt used to analyse, plan and rebuild SplitStack for the Web Technology course",
+  "author": "Mahaprabhu K",
+  "assistant": "Claude Code (Claude Opus 5.5)",
+  "repository": "github.com/PAVITHRAN1511/SplitStack (branch: refurbish)",
+  "stages": {
+    "Planning": "Analysis of the existing project, audit report review, gap analysis and refurbishment plan",
+    "Phase 0": "Repository setup, hygiene and documentation tooling",
+    "Review 1": "HTML + CSS - static, semantic pages and a token-based design system",
+    "Review 2": "JavaScript - vanilla ES modules, interactivity, client-side algorithms",
+    "Review 3": "Node.js + MongoDB - Express REST API, Mongoose models, authentication, OCR",
+    "Wrap-up": "Documentation, cleanup and deployment"
+  },
+  "entries": [
+    {
+      "id": 1,
+      "date": "2026-10-14",
+      "stage": "Planning",
+      "title": "Initial request from the student",
+      "type": "User prompt",
+      "prompt": "i have a project in my web technology course and we have made a website. i want to check everything and refurbish if needed. the project shd have these things. html + css, javascript, node js , mangodbs. for review 1-html+css, for review 2 javascript. for review 3 the rest two. i have attached a report of the existing project. i want you to analyse the repositry and then the audit report. and give a good plan for the refurshing if needed. during refurbishing i want you to document the prompts you'll use to build the project save it as a log document(word)",
+      "purpose": "Defines the goal: verify the project meets the course stack (HTML+CSS, JavaScript, Node.js, MongoDB) across three reviews, refurbish it, and log all prompts in a Word document.",
+      "files": ["SplitStack_Comprehensive_Technical_Audit.pdf (input)"],
+      "result": "Task accepted; analysis started.",
+      "verification": "-"
+    },
+    {
+      "id": 2,
+      "date": "2026-10-14",
+      "stage": "Planning",
+      "title": "Analyse the repository",
+      "type": "Working prompt",
+      "prompt": "Inventory the SplitStack repository: list every tracked file, read the git history, the dependency manifests (requirements.txt / package.json), the base HTML layout, the CSS design tokens and all JavaScript (main.js plus inline <script> blocks in templates). Identify the actual technology stack and compare it with the course requirement of HTML+CSS, JavaScript, Node.js and MongoDB.",
+      "purpose": "Establish ground truth about what the code really is, independent of the audit report.",
+      "files": ["app.py", "requirements.txt", "templates/**", "static/css/style.css", "static/js/main.js", ".gitignore"],
+      "result": "Stack is Python 3 + Flask 3.1 + SQLite with Jinja2 templates; no Node.js, no MongoDB, no package.json. Frontend JS is ~140 lines of jQuery. 25 Jinja templates cannot render without Flask. 4 user-uploaded receipt images are committed to git.",
+      "verification": "File listing, git log, grep for <script> tags, manual reading of base.html and main.js."
+    },
+    {
+      "id": 3,
+      "date": "2026-10-14",
+      "stage": "Planning",
+      "title": "Analyse the audit report",
+      "type": "Working prompt",
+      "prompt": "Extract the text of SplitStack_Comprehensive_Technical_Audit.pdf (61 pages) and summarise its findings: technology stack, architecture, route inventory, database schema, security findings (SEC-01..SEC-07), test results, technical debt and the five-phase refurbishment roadmap (Phases A-E). Note anything the audit does not cover relative to the course requirements.",
+      "purpose": "Reuse the audit's verified findings and identify its blind spots.",
+      "files": ["SplitStack_Comprehensive_Technical_Audit.pdf"],
+      "result": "Audit confirms 48 routes, 7 blueprints, 15 SQLite tables, 47/47 tests passing. Key findings kept: incomplete light theme, --text-dim contrast 3.8:1 (fails WCAG AA), tables scroll on mobile, search/notification bell not wired, no rate limiting, no security headers, ephemeral upload storage. Blind spot: the audit never mentions that Node.js and MongoDB are required, so its Flask-specific roadmap (SQLite WAL, Flask-Limiter, PostgreSQL) does not satisfy Review 3.",
+      "verification": "Text extracted with pypdf; sections 2, 12-17 and Volume VI read."
+    },
+    {
+      "id": 4,
+      "date": "2026-10-14",
+      "stage": "Planning",
+      "title": "Gap analysis and refurbishment plan",
+      "type": "Working prompt",
+      "prompt": "Produce a refurbishment plan that maps the work onto the three course reviews: Review 1 must be demonstrable with only HTML+CSS, Review 2 must add substantial vanilla JavaScript on top of the same pages, and Review 3 must replace the backend with Node.js (Express) and MongoDB while keeping every existing feature. Fold in the still-relevant audit findings. Ask the student only about decisions that are genuinely theirs: backend strategy, where MongoDB runs, feature scope, and whether to keep jQuery.",
+      "purpose": "Turn the analysis into an ordered plan with clear review checkpoints.",
+      "files": ["docs/REFURBISH_PLAN.md"],
+      "result": "Plan: Phase 0 setup -> Review 1 static pages + design system -> Review 2 vanilla JS with a localStorage data layer -> Review 3 Express + Mongoose REST API, with the frontend data layer switched to fetch(). Student's answers: 'do the most optimal method' for the backend (=> replace Flask with Node+MongoDB, keep Flask on a legacy branch), MongoDB Atlas free tier, keep every feature including OCR (via tesseract.js), vanilla JS modules instead of jQuery. Student also asked: 'just make sure you log everything'.",
+      "verification": "Decisions confirmed through a multiple-choice question in chat."
+    },
+    {
+      "id": 5,
+      "date": "2026-10-14",
+      "stage": "Phase 0",
+      "title": "Branching and repository hygiene",
+      "type": "Working prompt",
+      "prompt": "Preserve the current Flask application on a local 'legacy' branch and create a 'refurbish' working branch. Stop tracking the four user-uploaded receipt images (hash-named files in uploads/receipts/) while keeping the test_invoice_* samples, deduplicate .gitignore, and add Node-specific ignores (node_modules, coverage, .env). Create the client/ folder structure (pages, css, js, assets).",
+      "purpose": "Protect the original work, remove private data from version control, and prepare the new layout.",
+      "files": [".gitignore", "uploads/receipts/* (untracked)", "client/"],
+      "result": "Branches legacy and refurbish created; 4 receipts untracked (still on disk); .gitignore rewritten.",
+      "verification": "git status shows the 4 receipts as deleted from the index and no longer as untracked files."
+    },
+    {
+      "id": 6,
+      "date": "2026-10-14",
+      "stage": "Phase 0",
+      "title": "Prompt-log tooling (this document)",
+      "type": "Working prompt",
+      "prompt": "Create a Word prompt log that is easy to keep up to date: store every prompt as an entry in docs/prompt_log.json (id, date, stage, title, type, prompt, purpose, files, result, verification) and write a Node script docs/tools/build-prompt-log.js using the 'docx' npm package that renders a title page, a stage overview, a summary table of all entries, and one detailed section per entry with the prompt shown verbatim. Add an 'npm run log' script.",
+      "purpose": "Satisfy the requirement to document every prompt as a Word document, regenerated after each step.",
+      "files": ["package.json", "docs/prompt_log.json", "docs/tools/build-prompt-log.js", "docs/SplitStack_Prompt_Log.docx"],
+      "result": "Log generator working; document regenerated after every subsequent step.",
+      "verification": "npm run log produces the .docx; contents read back with python-docx."
+    }
+  ]
+}

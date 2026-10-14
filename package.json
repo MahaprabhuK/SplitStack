@@ -1,0 +1,12 @@
+{
+  "name": "splitstack",
+  "version": "3.0.0",
+  "private": true,
+  "description": "SplitStack - personal & group expense management (HTML/CSS, JavaScript, Node.js, MongoDB)",
+  "scripts": {
+    "log": "node docs/tools/build-prompt-log.js"
+  },
+  "devDependencies": {
+    "docx": "^9.5.1"
+  }
+}
