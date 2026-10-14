@@ -1,0 +1,50 @@
+# SplitStack client
+
+Static front end of SplitStack. **Review 1 (HTML + CSS)**: every screen is a plain HTML page with sample data,
+styled by a layered CSS design system. No JavaScript is used yet.
+
+## View it
+
+```bash
+npm run client
+```
+
+Then open http://localhost:5500. Opening `index.html` directly from disk also works.
+
+## Structure
+
+```
+index.html            landing page
+pages/                24 app pages (dashboard, expenses, groups, settlements, shopping, OCR, ...)
+css/main.css          entry point: imports the layers below in order
+css/tokens.css        colours, type, spacing; dark default + light theme
+css/base.css          reset, typography, focus ring, skip link
+css/layout.css        app shell, sidebar, topbar, grids, responsive breakpoints
+css/components.css    cards, buttons, forms, tables, meters, charts, ...
+css/pages.css         page-specific pieces (hero, dashboard, receipt view)
+css/utilities.css     small helpers
+assets/               favicon and the sample receipt image
+```
+
+## CSS techniques worth pointing out
+
+| Technique | Where |
+|---|---|
+| Cascade layers (`@layer`) to control override order | `main.css` |
+| Custom properties as design tokens; light theme via `prefers-color-scheme` and `[data-theme]` | `tokens.css` |
+| Mobile drawer with no JS: hidden checkbox + `:has()` | `layout.css` |
+| Equal/custom split toggle with no JS: `form:has(#split-custom:checked)` | `pages.css` |
+| Purchased shopping items struck through: `.check-item:has(input:checked)` | `components.css` |
+| Doughnut chart from `conic-gradient`, bar chart from flexbox + `--h` | `components.css` |
+| Tables become labelled cards on phones via `td::before { content: attr(data-label) }` | `components.css` |
+| Validation feedback only after interaction: `:user-invalid` | `components.css` |
+| `color-mix()` for tinted category tags from one `--cat` colour | `components.css` |
+| Fluid type with `clamp()`, `prefers-reduced-motion` support | `tokens.css` |
+
+## Checks
+
+```bash
+npx html-validate "client/**/*.html"
+```
+
+All pages validate with zero errors (config in `.htmlvalidate.json`). Text colours meet WCAG AA contrast.

@@ -1,0 +1,10 @@
+{
+  "extends": ["html-validate:recommended"],
+  "rules": {
+    "no-inline-style": "off",
+    "no-trailing-whitespace": "off",
+    "long-title": "off",
+    "form-dup-name": ["error", { "shared": ["radio", "checkbox", "button", "reset", "submit"] }],
+    "prefer-native-element": ["error", { "exclude": ["progressbar"] }]
+  }
+}
