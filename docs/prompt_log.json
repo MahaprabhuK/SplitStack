@@ -309,6 +309,33 @@
       ],
       "result": "main and refurbish are on GitHub. The client/ folder is published from the gh-pages branch at https://mahaprabhuk.github.io/SplitStack/ (GitHub enabled Pages automatically). To redeploy after client changes: git subtree split --prefix client refurbish, then push that commit to gh-pages.",
       "verification": "git ls-remote; curl returned 200 for the home page, pages/404.html and css/base.css on the live site."
+    },
+    {
+      "id": 20,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Request: handover prompt PDF for a teammate's agent",
+      "type": "User prompt",
+      "prompt": "imma handover the project to my teammate i want you to create a detailed prompt for his agent most prolly he'll use anti gravity so i want a pdf containing prompts to complete the rest of the work in the project. so create a pdf and mention its path once its created then i'll share it to him",
+      "purpose": "Let a teammate's AI agent (Antigravity) finish Review 2, Review 3 and the wrap-up.",
+      "files": [],
+      "result": "Handled in the next step.",
+      "verification": "-"
+    },
+    {
+      "id": 21,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Handover prompts PDF",
+      "type": "Working prompt",
+      "prompt": "Write docs/tools/build_handover_pdf.py (reusing the styles of build_prompt_pdf.py) to produce docs/SplitStack_Handover_Prompts.pdf: how to use it with Antigravity, one-time setup (tools, collaborator access, MongoDB Atlas, workflow token scope), a roadmap, Prompt 0 with the full project context, rules, logging, commit/push and gh-pages redeploy procedure, the 15 planned prompts P1-P15 expanded with concrete checks and commit messages, utility prompts (status, recovery, review rehearsal) and common problems. Render pages to check the layout.",
+      "purpose": "Give the teammate a self-contained, ordered set of prompts.",
+      "files": [
+        "docs/tools/build_handover_pdf.py",
+        "docs/SplitStack_Handover_Prompts.pdf"
+      ],
+      "result": "14-page PDF created. Changes against the planned prompts: P1 adds data-page attributes and client/js/package.json (type module) for node --test; P13 keeps the localStorage implementation as a demo mode (api-local.js chosen when /api/health does not answer) so the GitHub Pages site keeps working, instead of deleting it; P9 replaces deprecated csurf with a synchronizer token; P14 uses MongoMemoryReplSet because the API uses transactions; P15 asks for confirmation before deleting the Flask files and leaves Render account steps to the student.",
+      "verification": "Rendered pages with PyMuPDF and checked the layout of the setup, Prompt 0, step and utility pages."
     }
   ],
   "planned": [
