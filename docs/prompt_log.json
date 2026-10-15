@@ -243,16 +243,45 @@
       "id": 15,
       "date": "2026-10-15",
       "stage": "Wrap-up",
-      "title": "Create the GitHub repository and publish the site",
+      "title": "Create the GitHub repository and push the code",
       "type": "Working prompt",
       "prompt": "Install the official GitHub CLI with winget and sign in through the device-code flow (the student approves it in the browser). Before publishing, check that no secrets or databases are tracked, review the receipt images that are still in the commit history (they are generic sample invoices), and confirm with the student that a public repository is acceptable because the team's original repository is private. Then create the public repository MahaprabhuK/SplitStack, push the refurbish branch as main together with the legacy branch, add a GitHub Actions workflow (.github/workflows/pages.yml) that deploys the client/ folder to GitHub Pages, enable Pages with the \"GitHub Actions\" source, and confirm that the site responds.",
       "purpose": "Give the student a repository link and a live website link.",
       "files": [
-        ".github/workflows/pages.yml",
         "README.md"
       ],
-      "result": "Repository: https://github.com/MahaprabhuK/SplitStack - Website: https://mahaprabhuk.github.io/SplitStack/",
-      "verification": "gh repo view; Pages workflow run; HTTP check of the live URL."
+      "result": "Public repository https://github.com/MahaprabhuK/SplitStack created and the legacy branch pushed. The first push of main was rejected because it added a GitHub Actions workflow (.github/workflows/pages.yml) and the gh token lacked the \"workflow\" scope; the workflow file was removed and main was pushed in the next step. GitHub Pages is not set up yet (planned for the wrap-up; needs \"gh auth refresh -s workflow\" or a gh-pages branch).",
+      "verification": "gh repo view; git push output."
+    },
+    {
+      "id": 16,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Request: hand the project over to a teammate's agent",
+      "type": "User prompt",
+      "prompt": "ACTUALLY I GONNA HANDOVER THE PROJECT TO MY TEAMMATES AGENT SO HE'LL BE PULLING THE CODE AND RUNNING IN HIS SYSTEM SO GIVE PROMPT FOR THAT",
+      "purpose": "Let a teammate's AI agent clone, run and continue the project.",
+      "files": [],
+      "result": "A handover prompt was written covering: requirements per review, clone and branch, prerequisites, install/run/verify commands, repository map, known traps, the mandatory logging rule, the ordered remaining work (planned prompts P1-P15) and working rules. Noted that the new work had to be pushed to GitHub first.",
+      "verification": "-"
+    },
+    {
+      "id": 17,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Push the refurbished code to GitHub main",
+      "type": "Working prompt",
+      "prompt": "push it  (user prompt). Executed as: remove .github/workflows/pages.yml (the token lacks the workflow scope), replace the not-yet-existing live-site link in README.md with local run instructions, correct the earlier log entry about publishing, log the handover, rebuild the prompt logs, commit, and push the refurbish branch to main on https://github.com/MahaprabhuK/SplitStack so the teammate can clone it.",
+      "purpose": "Make the current work available to the teammate.",
+      "files": [
+        ".github/workflows/pages.yml (removed)",
+        "README.md",
+        "docs/prompt_log.json",
+        "docs/SplitStack_Prompt_Log.docx",
+        "docs/SplitStack_Prompt_Log.pdf"
+      ],
+      "result": "main pushed to GitHub; branches on GitHub: main (refurbished work) and legacy (original Flask app).",
+      "verification": "git ls-remote shows main and legacy at the expected commits."
     }
   ],
   "planned": [
