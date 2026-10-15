@@ -109,6 +109,26 @@ for (const stage of stageNames) {
   }
 }
 
+// Planned prompts that complete the project (not yet executed)
+const planned = log.planned || [];
+if (planned.length) {
+  details.push(
+    para(new PageBreak()),
+    para(text('Planned prompts to complete the project'), { heading: HeadingLevel.HEADING_1 }),
+    body('These prompts have not been run yet. Run them in order; after each one, move it into the log above with its result.'),
+  );
+  planned.forEach((e, i) => {
+    details.push(
+      para(text(`P${i + 1}  ${e.title}`), { heading: HeadingLevel.HEADING_3, keepNext: true }),
+      para(text(`${e.stage}  |  ${e.type}`, { size: 18, color: MUTED }), { spacing: { after: 60 }, keepNext: true }),
+      label('Prompt'),
+      promptBlock(e.prompt),
+      label('Purpose'), body(e.purpose),
+      label('Files'), body(e.files.join(', ')),
+    );
+  });
+}
+
 const doc = new Document({
   creator: log.author,
   title: log.title,

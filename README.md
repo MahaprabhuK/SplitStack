@@ -1,5 +1,14 @@
 # SplitStack - Smart Financial & Group Expense Management
 
+> **Refurbishment in progress (Web Technology course).** SplitStack is being rebuilt in three stages:
+> Review 1 HTML + CSS (**done**, in [`client/`](client/)), Review 2 JavaScript, Review 3 Node.js + MongoDB.
+>
+> - Live site (Review 1): https://mahaprabhuk.github.io/SplitStack/
+> - Plan: [`docs/REFURBISH_PLAN.md`](docs/REFURBISH_PLAN.md)
+> - Prompt log: [`docs/SplitStack_Prompt_Log.pdf`](docs/SplitStack_Prompt_Log.pdf) / [`.docx`](docs/SplitStack_Prompt_Log.docx)
+> - The original Flask + SQLite version described below is preserved on the [`legacy`](../../tree/legacy) branch
+>   and is still in this branch until the wrap-up stage.
+
 **SplitStack** is an intelligent, full-featured personal finance and group expense-sharing web application built with Python, Flask, SQLite, and modern vanilla web technologies.
 
 It combines daily personal budgeting, multi-party shared expense splitting, debt simplification algorithms, collaborative shopping management, financial analytics with dynamic charts, receipt OCR processing, and machine-learning-driven spending forecasts.

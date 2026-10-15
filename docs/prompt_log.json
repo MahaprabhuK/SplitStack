@@ -4,7 +4,7 @@
   "subtitle": "Every prompt used to analyse, plan and rebuild SplitStack for the Web Technology course",
   "author": "Mahaprabhu K",
   "assistant": "Claude Code (Claude Opus 5.5)",
-  "repository": "github.com/PAVITHRAN1511/SplitStack (branch: refurbish)",
+  "repository": "https://github.com/MahaprabhuK/SplitStack",
   "stages": {
     "Planning": "Analysis of the existing project, audit report review, gap analysis and refurbishment plan",
     "Phase 0": "Repository setup, hygiene and documentation tooling",
@@ -207,6 +207,231 @@
       ],
       "result": "Review 1 committed. Next: Review 2 (vanilla JavaScript modules).",
       "verification": "npm run lint:html passes; git log shows the Review 1 commit."
+    },
+    {
+      "id": 13,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Request: GitHub repository, website link and PDF of prompts",
+      "type": "User prompt",
+      "prompt": "create a new repositry for this project in my gihub , and after than give me the github link and then the website link and also a pdf containing the prompts to complete project.",
+      "purpose": "Publish the project under the student's own GitHub account, host the site, and export the prompt log (including the remaining planned prompts) as a PDF.",
+      "files": [],
+      "result": "Done: see the following entries.",
+      "verification": "-"
+    },
+    {
+      "id": 14,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "PDF export of the prompt log, including planned prompts",
+      "type": "Working prompt",
+      "prompt": "Export the prompt log to PDF with a Python reportlab script (docs/tools/build_prompt_pdf.py) that reads docs/prompt_log.json: a title page, a stage overview table, a summary of every entry, Part A with every executed prompt verbatim in a shaded box with purpose, files, result and verification, and Part B with the planned prompts that complete Review 2, Review 3 and the wrap-up, clearly marked as not yet run. Add the planned prompts to prompt_log.json and to the Word log as well, and make \"npm run log\" rebuild both documents.",
+      "purpose": "Give the student a PDF containing the prompts needed to complete the whole project.",
+      "files": [
+        "docs/tools/build_prompt_pdf.py",
+        "docs/tools/build-prompt-log.js",
+        "docs/prompt_log.json",
+        "docs/SplitStack_Prompt_Log.pdf",
+        "docs/SplitStack_Prompt_Log.docx",
+        "package.json"
+      ],
+      "result": "PDF with the executed prompts and 15 planned prompts; the Word log has the same content.",
+      "verification": "Pages rendered to images and inspected; text extracted with pypdf."
+    },
+    {
+      "id": 15,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Create the GitHub repository and publish the site",
+      "type": "Working prompt",
+      "prompt": "Install the official GitHub CLI with winget and sign in through the device-code flow (the student approves it in the browser). Before publishing, check that no secrets or databases are tracked, review the receipt images that are still in the commit history (they are generic sample invoices), and confirm with the student that a public repository is acceptable because the team's original repository is private. Then create the public repository MahaprabhuK/SplitStack, push the refurbish branch as main together with the legacy branch, add a GitHub Actions workflow (.github/workflows/pages.yml) that deploys the client/ folder to GitHub Pages, enable Pages with the \"GitHub Actions\" source, and confirm that the site responds.",
+      "purpose": "Give the student a repository link and a live website link.",
+      "files": [
+        ".github/workflows/pages.yml",
+        "README.md"
+      ],
+      "result": "Repository: https://github.com/MahaprabhuK/SplitStack - Website: https://mahaprabhuk.github.io/SplitStack/",
+      "verification": "gh repo view; Pages workflow run; HTTP check of the live URL."
+    }
+  ],
+  "planned": [
+    {
+      "stage": "Review 2",
+      "title": "JavaScript architecture and app shell",
+      "type": "Planned prompt",
+      "prompt": "Add vanilla JavaScript to the Review 1 pages as native ES modules loaded with <script type=\"module\" src=\"../js/app.js\">. Create client/js/ with: app.js (entry; detects the page from <body data-page> and calls that page's init), core/dom.js (qs, qsa, on, delegate, createEl helpers), core/format.js (formatINR with Intl.NumberFormat(\"en-IN\", {style: \"currency\", currency: \"INR\"}), date formatting), ui/theme.js (dark/light/system toggle stored in localStorage and applied to <html data-theme> by a tiny inline script in <head> so there is no flash), ui/nav.js (replace the CSS checkbox drawer with a real <button aria-expanded aria-controls>, close on Escape, scrim click and link click, keep focus inside while open), ui/toast.js (accessible role=status toasts) and ui/confirm.js (a <dialog> element replacing window.confirm for every delete form). No jQuery and no frameworks.",
+      "purpose": "Lay the foundation for Review 2 with a clean module structure.",
+      "files": [
+        "client/js/app.js",
+        "client/js/core/*.js",
+        "client/js/ui/*.js",
+        "client/pages/*.html"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Client data layer backed by localStorage",
+      "type": "Planned prompt",
+      "prompt": "Create client/js/data/api.js exposing async functions with the same shape the future REST API will have: auth (register, login, logout, currentUser), expenses and income CRUD with filtering, sorting and pagination, categories, budgets, recurring payments, groups (members, shared expenses, balances, settlements), shopping lists and items, and analytics summaries. Back it with client/js/data/store.js, which keeps collections in localStorage under a versioned key, generates ids, and seeds the same sample data used in Review 1 (Priya Raman, October 2026) on first run. Every function returns a Promise and validates its input, throwing errors with a field and a message, so Review 3 can swap the implementation to fetch() without touching page code.",
+      "purpose": "Make the whole app genuinely interactive before a backend exists.",
+      "files": [
+        "client/js/data/api.js",
+        "client/js/data/store.js",
+        "client/js/data/seed.js"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Render pages from data",
+      "type": "Planned prompt",
+      "prompt": "Replace the hard-coded sample rows in the dashboard, expenses, income, budgets, recurring, categories, groups, group detail, settlements, shopping and profile pages with markup rendered by JavaScript from api.js, using <template> elements and textContent (never innerHTML with user data). Keep the static markup as the no-JavaScript fallback. Implement the expenses filter bar (search, category, method, date range, sort) with debounced live filtering and query-string sync, pagination, and empty states.",
+      "purpose": "Turn the static pages into working screens.",
+      "files": [
+        "client/js/pages/*.js",
+        "client/pages/*.html"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Forms, validation and CRUD flows",
+      "type": "Planned prompt",
+      "prompt": "Wire every form (register, login, expense add/edit, income, budget, recurring, category, group create, add member, shared expense, shopping list and item, profile, change password) to api.js. Use the Constraint Validation API plus custom rules (passwords match, date not in the future, budget greater than zero) with inline error messages linked by aria-describedby, and move focus to the first invalid field. Show a toast after each save and redirect afterwards (Post/Redirect/Get). Add password show/hide toggles with aria-pressed. Protect app pages: redirect to login.html when nobody is signed in.",
+      "purpose": "Cover the core JavaScript skills examiners look for: events, DOM manipulation, validation.",
+      "files": [
+        "client/js/pages/*.js",
+        "client/js/ui/forms.js"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Group splitting and the debt-simplification algorithm",
+      "type": "Planned prompt",
+      "prompt": "In client/js/domain/splits.js implement equal splits in integer paise with the leftover paise assigned to the payer, and custom splits that must sum exactly to the total. On the shared-expense form show a live \"remaining to assign\" counter and disable submit until it reaches zero. In client/js/domain/settle.js implement net balances (paid minus share) and the greedy minimum-cash-flow algorithm: repeatedly match the largest debtor with the largest creditor and transfer min(debt, credit) until every balance is within one paisa; return the transfer list and the number of original pairwise debts. Render the settle-up page from it, and make \"Mark paid\" record a settlement and recompute balances. Add unit tests runnable with node --test using the Goa Trip example (balances +1700, -2500, +5700, -4900 give 3 transfers).",
+      "purpose": "Show algorithmic JavaScript, the core idea of SplitStack.",
+      "files": [
+        "client/js/domain/splits.js",
+        "client/js/domain/settle.js",
+        "tests/client/*.test.js"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Charts, budgets, forecast, insights, search and notifications",
+      "type": "Planned prompt",
+      "prompt": "Render the dashboard and analytics charts with Chart.js 4 loaded from a pinned CDN URL, reading colours from the CSS custom properties so both themes work, and keep the CSS charts as a fallback. Compute budget status (ok under 75%, caution 75-90%, warning 90-100%, danger over 100%) and update the meters. Port the spending forecast (average daily spend multiplied by the days in the month) to client/js/domain/forecast.js. Generate smart insights from the data (over-budget categories, month-over-month change, upcoming recurring bills). Make the topbar search show live results across expenses, groups and lists in a listbox with keyboard navigation, and make the bell open a notifications panel built from the insights with an unread count.",
+      "purpose": "Finish the interactive features that were disconnected in the original app.",
+      "files": [
+        "client/js/pages/dashboard.js",
+        "client/js/pages/analytics.js",
+        "client/js/domain/forecast.js",
+        "client/js/ui/search.js",
+        "client/js/ui/notifications.js"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Shopping checklist and receipt scan preview",
+      "type": "Planned prompt",
+      "prompt": "Make the shopping checklist toggle items with optimistic UI, edit actual prices inline, recompute the estimated, actual and variance totals live, and convert the list to an expense only once (prevent duplicates). On the receipt scan page add drag-and-drop with dragenter/dragleave styling, client-side checks (PNG, JPEG or WEBP, up to 5 MB) and an image preview via URL.createObjectURL. Until the backend exists, run OCR in the browser with tesseract.js from a pinned CDN, parse the merchant, date and total with regular expressions (prefer the line containing TOTAL), show progress, and pre-fill the confirm form.",
+      "purpose": "Complete the remaining interactive flows.",
+      "files": [
+        "client/js/pages/shopping-detail.js",
+        "client/js/pages/receipt-scan.js",
+        "client/js/domain/receipt-parser.js"
+      ]
+    },
+    {
+      "stage": "Review 2",
+      "title": "Review 2 QA, log and commit",
+      "type": "Planned prompt",
+      "prompt": "Run ESLint (recommended rules, browser globals, ES2023 modules) over client/js and fix every finding; run the domain unit tests; test every page manually at 1366px and 375px in dark and light themes, using only the keyboard, and with JavaScript disabled (pages must still show their static content). Update client/README.md with the JavaScript architecture and a table of the JS concepts used and where. Add each step to docs/prompt_log.json, rebuild the Word and PDF logs, and commit \"Review 2\".",
+      "purpose": "Close Review 2 with evidence.",
+      "files": [
+        "eslint.config.js",
+        "client/README.md",
+        "docs/*"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Express server and MongoDB connection",
+      "type": "Planned prompt",
+      "prompt": "Create server/ as a Node.js 20+ project (ES modules) with Express: server/src/app.js (helmet with a Content Security Policy that allows only the CDNs in use, compression, express.json, express-session stored with connect-mongo, express-rate-limit on auth and upload routes, a CSRF token check on state-changing requests, and a central error handler returning JSON {error, fields}), server/src/index.js (connect to MongoDB Atlas with Mongoose using MONGODB_URI from server/.env, then listen), and static serving of client/. Add server/.env.example (MONGODB_URI, SESSION_SECRET of at least 32 characters, PORT) and npm scripts dev (node --watch) and start. Never commit .env.",
+      "purpose": "Start Review 3 with a secure, conventional Express setup.",
+      "files": [
+        "server/package.json",
+        "server/src/app.js",
+        "server/src/index.js",
+        "server/.env.example"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Mongoose data models",
+      "type": "Planned prompt",
+      "prompt": "Design Mongoose schemas with validation and indexes to replace the 15 SQLite tables: User (name, email unique and lowercase, passwordHash, preferences), Category (user, or null for defaults; name; type expense or income; icon; color), Expense and Income (user, category, amount stored as integer paise, date, description or source, paymentMethod), Budget (user, category or null, month, year, limit; unique on user+category+month+year), Recurring (name, amount, frequency, startDate, nextDueDate, active), Group (name, description, createdBy, members [{user, role admin|member, joinedAt}]), SharedExpense (group, title, amount, paidBy, category, date, splitType, shares [{user, amount}] with a validator that the shares sum to the amount), Settlement (group, payer, payee, amount, status, completedAt), ShoppingList (owner, optional group, name, budget, items [{name, quantity, estimatedPrice, actualPrice, purchased, assignedTo}], convertedExpense), Receipt (user, file reference, merchant, date, amount, rawText, confidence) and Insight (user, kind, message, read). Explain in comments which data is embedded and which is referenced, and why.",
+      "purpose": "Show MongoDB data modelling, the core of Review 3.",
+      "files": [
+        "server/src/models/*.js"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Authentication and REST API",
+      "type": "Planned prompt",
+      "prompt": "Implement the REST API under /api with one express.Router per module, mirroring the 48 legacy Flask routes: /api/auth (register with bcrypt cost 12, login, logout, me), /api/expenses, /api/income, /api/categories, /api/budgets, /api/recurring (including toggle), /api/groups (members, shared expenses, balances, settlements, leave), /api/shopping (lists, items, toggle, convert to expense), /api/analytics (monthly, categories, forecast, insights) and /api/search. Validate every input with a schema (zod or express-validator), check ownership or group membership on every request, use MongoDB transactions for multi-document writes (recording a settlement, converting a list), and reuse the Review 2 settle.js and splits.js modules on the server so the algorithm has a single implementation.",
+      "purpose": "Deliver the Node.js back end with a complete, secure API.",
+      "files": [
+        "server/src/routes/*.js",
+        "server/src/services/*.js",
+        "server/src/middleware/*.js"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Receipt upload and server-side OCR",
+      "type": "Planned prompt",
+      "prompt": "Add POST /api/receipts using multer with memory storage, a 5 MB limit and magic-byte checks for PNG, JPEG and WEBP; preprocess with sharp (rotate from EXIF, greyscale, upscale small images, normalise); run tesseract.js with one shared worker; parse the merchant, date and total with the Review 2 parser; store the image in MongoDB GridFS (so it survives redeploys on free hosting) and the parsed fields in Receipt. GET /api/receipts/:id/image streams the image only to its owner. Confirming creates the expense; nothing becomes an expense without confirmation.",
+      "purpose": "Port the OCR feature to Node with persistent storage.",
+      "files": [
+        "server/src/routes/receipts.js",
+        "server/src/services/ocr.js"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Connect the client to the API",
+      "type": "Planned prompt",
+      "prompt": "Re-implement client/js/data/api.js with fetch() against /api, sending credentials and the CSRF token header, mapping HTTP errors to the same {field, message} errors the pages already handle, and showing a toast when offline. Remove the localStorage store except for the theme preference. Because the page code depends only on api.js, no page module should need changes; confirm this by running every flow end to end against a local server connected to Atlas.",
+      "purpose": "Finish the full-stack integration.",
+      "files": [
+        "client/js/data/api.js"
+      ]
+    },
+    {
+      "stage": "Review 3",
+      "title": "Seed data and automated tests",
+      "type": "Planned prompt",
+      "prompt": "Add server/scripts/seed.js that creates the demo user, categories, six months of expenses and income, budgets, recurring payments, the three groups with shared expenses, and shopping lists. It must be idempotent and must refuse to run against a database whose name does not end in -dev or -test unless --force is passed. Write Jest + Supertest tests using mongodb-memory-server for auth, ownership checks, CSRF rejection, rate limiting, split validation, the settlement algorithm, budget status, convert-to-expense duplicate prevention and receipt upload validation, covering what the 47 legacy Python tests checked. Add an npm test script and a GitHub Actions workflow that runs lint and tests on every push.",
+      "purpose": "Prove the back end works and keep it working.",
+      "files": [
+        "server/scripts/seed.js",
+        "server/tests/*.test.js",
+        ".github/workflows/ci.yml"
+      ]
+    },
+    {
+      "stage": "Wrap-up",
+      "title": "Remove legacy code, document and deploy",
+      "type": "Planned prompt",
+      "prompt": "Delete the Flask app (app.py, config.py, database/, modules/, templates/, static/, ml/, tests/*.py, requirements.txt, Procfile) from main, since it is kept on the legacy branch. Rewrite README.md: features, the stack per review (HTML+CSS, JavaScript, Node.js+MongoDB), setup steps, environment variables, a data-model diagram, the API table and screenshots. Deploy the full app to Render as a Node web service (build: npm ci; start: npm start; environment: MONGODB_URI, SESSION_SECRET, NODE_ENV=production) with MongoDB Atlas network access configured, and keep the static site on GitHub Pages. Finish the prompt log, export it to Word and PDF, and tag the release v3.0.0.",
+      "purpose": "Deliver a clean, documented, deployed project.",
+      "files": [
+        "README.md",
+        "render.yaml",
+        "docs/*"
+      ]
     }
   ]
 }
