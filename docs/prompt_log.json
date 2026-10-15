@@ -282,6 +282,33 @@
       ],
       "result": "main pushed to GitHub; branches on GitHub: main (refurbished work) and legacy (original Flask app).",
       "verification": "git ls-remote shows main and legacy at the expected commits."
+    },
+    {
+      "id": 18,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Request: push the code and deploy the website",
+      "type": "User prompt",
+      "prompt": "first push the code and deploy it",
+      "purpose": "Get the code on GitHub and the Review 1 site online.",
+      "files": [],
+      "result": "Handled in the next step.",
+      "verification": "-"
+    },
+    {
+      "id": 19,
+      "date": "2026-10-15",
+      "stage": "Wrap-up",
+      "title": "Deploy the client to GitHub Pages from a gh-pages branch",
+      "type": "Working prompt",
+      "prompt": "Push refurbish to main and refurbish on MahaprabhuK/SplitStack. Because the token cannot push workflow files, deploy without GitHub Actions: check that client/ uses only relative links, split client/ into its own history with git subtree split, push it as the gh-pages branch, wait for GitHub Pages to publish it, then put the live link back in README.md and log the step.",
+      "purpose": "Publish the Review 1 site at a public URL without needing the workflow scope.",
+      "files": [
+        "README.md",
+        "docs/prompt_log.json"
+      ],
+      "result": "main and refurbish are on GitHub. The client/ folder is published from the gh-pages branch at https://mahaprabhuk.github.io/SplitStack/ (GitHub enabled Pages automatically). To redeploy after client changes: git subtree split --prefix client refurbish, then push that commit to gh-pages.",
+      "verification": "git ls-remote; curl returned 200 for the home page, pages/404.html and css/base.css on the live site."
     }
   ],
   "planned": [
