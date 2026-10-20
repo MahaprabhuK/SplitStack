@@ -5,8 +5,15 @@
   "description": "SplitStack - personal & group expense management (HTML/CSS, JavaScript, Node.js, MongoDB)",
   "scripts": {
     "client": "node scripts/serve-client.js",
-    "log": "node docs/tools/build-prompt-log.js && py -3 docs/tools/build_prompt_pdf.py",
-    "lint:html": "html-validate \"client/**/*.html\""
+    "server": "node server/src/index.js",
+    "test:client": "node --test \"tests/client/api-http.test.mjs\" \"tests/client/data-layer.test.mjs\" \"tests/client/forecast.test.mjs\" \"tests/client/forms.test.mjs\" \"tests/client/insights.test.mjs\" \"tests/client/render.test.mjs\" \"tests/client/search-notifications.test.mjs\" \"tests/client/shopping-receipt.test.mjs\" \"tests/client/splits-settle.test.mjs\"",
+    "test:server": "node --test \"server/tests/**/*.test.js\"",
+    "test:server:unit": "node --test \"server/tests/api.test.js\" \"server/tests/auth.test.js\" \"server/tests/models.test.js\" \"server/tests/receipts.test.js\" \"server/tests/server.test.js\"",
+    "test:integration": "node --test server/tests/integration.test.js",
+    "seed": "node server/scripts/seed.js --dev",
+    "seed:test": "node server/scripts/seed.js --test",
+    "lint:html": "html-validate \"client/**/*.html\"",
+    "log": "node docs/tools/build-prompt-log.js && python docs/tools/build_prompt_pdf.py"
   },
   "devDependencies": {
     "docx": "^9.5.1",

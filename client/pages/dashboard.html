@@ -12,8 +12,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../css/main.css">
+  <script>
+    try {
+      const t = localStorage.getItem('splitstack_theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (_) {}
+  </script>
 </head>
-<body>
+<body data-page="dashboard">
   <a class="skip-link" href="#main">Skip to main content</a>
   <input type="checkbox" id="nav-toggle" class="visually-hidden" aria-label="Show navigation menu">
   <div class="app-shell">
@@ -62,6 +68,7 @@
             <input id="global-search" type="search" name="q" placeholder="Search expenses, groups, lists">
             <button class="visually-hidden" type="submit">Search</button>
           </form>
+          <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
           <a class="icon-btn" href="dashboard.html#insights" aria-label="Notifications, 3 new" title="Notifications"><i class="fa-regular fa-bell" aria-hidden="true"></i><span class="dot"></span></a>
           <a class="avatar" href="profile.html" aria-label="Your profile" title="Priya Raman">PR</a>
         </div>
@@ -265,9 +272,9 @@
             </div>
             <div class="card-body">
               <ul class="list">
-                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-travel)"><i class="fa-solid fa-umbrella-beach" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html">Goa Trip 2026</a><span class="list-sub">4 members</span></span><span class="balance-pos num">+₹1,700</span></li>
-                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-bills)"><i class="fa-solid fa-house" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html">Flat 4B</a><span class="list-sub">3 members</span></span><span class="balance-neg num">&minus;₹450</span></li>
-                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-food)"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html">Office lunch club</a><span class="list-sub">6 members</span></span><span class="balance-zero">Settled</span></li>
+                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-travel)"><i class="fa-solid fa-umbrella-beach" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html?id=grp_goa">Goa Trip 2026</a><span class="list-sub">4 members</span></span><span class="balance-pos num">+₹1,700</span></li>
+                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-bills)"><i class="fa-solid fa-house" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html?id=grp_flat">Flat 4B</a><span class="list-sub">3 members</span></span><span class="balance-neg num">&minus;₹450</span></li>
+                <li class="list-item"><span class="cat-icon" style="--cat: var(--cat-food)"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span><span class="grow"><a class="list-title" href="group-detail.html?id=grp_office">Office lunch club</a><span class="list-sub">6 members</span></span><span class="balance-zero">Settled</span></li>
               </ul>
             </div>
           </section>
@@ -315,5 +322,6 @@
       <footer class="app-footer">&copy; 2026 SplitStack &middot; Personal &amp; group expense management</footer>
     </div>
   </div>
+  <script type="module" src="../js/app.js"></script>
 </body>
 </html>

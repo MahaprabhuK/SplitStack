@@ -12,8 +12,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../css/main.css">
+  <script>
+    try {
+      const t = localStorage.getItem('splitstack_theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (_) {}
+  </script>
 </head>
-<body>
+<body data-page="shopping">
   <a class="skip-link" href="#main">Skip to main content</a>
   <input type="checkbox" id="nav-toggle" class="visually-hidden" aria-label="Show navigation menu">
   <div class="app-shell">
@@ -62,6 +68,7 @@
             <input id="global-search" type="search" name="q" placeholder="Search expenses, groups, lists">
             <button class="visually-hidden" type="submit">Search</button>
           </form>
+          <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
           <a class="icon-btn" href="dashboard.html#insights" aria-label="Notifications, 3 new" title="Notifications"><i class="fa-regular fa-bell" aria-hidden="true"></i><span class="dot"></span></a>
           <a class="avatar" href="profile.html" aria-label="Your profile" title="Priya Raman">PR</a>
         </div>
@@ -73,7 +80,7 @@
         </div>
         <div class="grid grid-3">
 
-          <a class="card group-card" href="shopping-detail.html">
+          <a class="card group-card" href="shopping-detail.html?id=shop_1">
             <div class="card-header"><div class="flex items-center gap-3"><span class="cat-icon" style="--cat: var(--cat-food)"><i class="fa-solid fa-basket-shopping" aria-hidden="true"></i></span><div><h2 class="card-title">Monthly groceries</h2><p class="text-xs">Personal</p></div></div></div>
             <div class="card-body">
               <div class="flex justify-between text-sm"><span>9 of 14 bought</span><span class="text-dim">Est. ₹3,131</span></div>
@@ -81,7 +88,7 @@
             </div>
           </a>
 
-          <a class="card group-card" href="shopping-detail.html">
+          <a class="card group-card" href="shopping-detail.html?id=shop_2">
             <div class="card-header"><div class="flex items-center gap-3"><span class="cat-icon" style="--cat: var(--cat-travel)"><i class="fa-solid fa-umbrella-beach" aria-hidden="true"></i></span><div><h2 class="card-title">Goa trip supplies</h2><p class="text-xs">Group &middot; Goa Trip 2026</p></div></div></div>
             <div class="card-body">
               <div class="flex justify-between text-sm"><span>6 of 8 bought</span><span class="text-dim">Est. ₹2,350</span></div>
@@ -89,7 +96,7 @@
             </div>
           </a>
 
-          <a class="card group-card" href="shopping-detail.html">
+          <a class="card group-card" href="shopping-detail.html?id=shop_3">
             <div class="card-header"><div class="flex items-center gap-3"><span class="cat-icon" style="--cat: var(--cat-bills)"><i class="fa-solid fa-broom" aria-hidden="true"></i></span><div><h2 class="card-title">Flat cleaning kit</h2><p class="text-xs">Group &middot; Flat 4B</p></div></div></div>
             <div class="card-body">
               <div class="flex justify-between text-sm"><span>3 of 5 bought</span><span class="text-dim">Est. ₹940</span></div>
@@ -101,5 +108,6 @@
       <footer class="app-footer">&copy; 2026 SplitStack &middot; Personal &amp; group expense management</footer>
     </div>
   </div>
+  <script type="module" src="../js/app.js"></script>
 </body>
 </html>

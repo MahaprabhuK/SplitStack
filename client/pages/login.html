@@ -12,8 +12,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@500;600;700;800&amp;display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../css/main.css">
+  <script>
+    try {
+      const t = localStorage.getItem('splitstack_theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (_) {}
+  </script>
 </head>
-<body>
+<body data-page="login">
   <a class="skip-link" href="#main">Skip to main content</a>
 <div class="auth-layout">
     <aside class="auth-panel" aria-label="About SplitStack">
@@ -32,7 +38,10 @@
       <div class="auth-card">
         <h1>Welcome back</h1>
         <p>Sign in to see your dashboard, groups and budgets.</p>
-        <div class="alert alert-success mb-4" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><div>Account created. You can sign in now.</div></div>
+        <div class="alert alert-info mb-4" role="status">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <div><strong>Demo login:</strong> <code>demo@splitstack.app</code> / <code>Demo@1234</code></div>
+        </div>
         <form class="form" action="dashboard.html" method="get">
           <div class="field">
             <label for="email">Email address <span class="req" aria-hidden="true">*</span></label>
@@ -55,5 +64,6 @@
       </div>
     </main>
   </div>
+  <script type="module" src="../js/app.js"></script>
 </body>
 </html>
