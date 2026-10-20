@@ -884,6 +884,25 @@ legend {
 
 .check-item .price { text-align: right; font-size: var(--fs-sm); }
 
+.check-item.is-editing {
+  display: block;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-2);
+}
+
+.check-item-edit-form {
+  display: grid;
+  grid-template-columns: minmax(140px, 2fr) 70px 100px 110px auto;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .check-item-edit-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ---------- Upload drop zone ---------- */
 .dropzone {
   position: relative;
@@ -900,7 +919,8 @@ legend {
 }
 
 .dropzone:hover,
-.dropzone:focus-within {
+.dropzone:focus-within,
+.dropzone.is-dragover {
   border-color: var(--primary);
   background: var(--primary-soft);
 }
@@ -913,6 +933,40 @@ legend {
   inset: 0;
   opacity: 0;
   cursor: pointer;
+}
+
+.dropzone.has-file {
+  padding: var(--sp-4);
+}
+
+.receipt-upload-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.receipt-upload-preview .receipt-preview-thumb {
+  max-height: 240px;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  object-fit: contain;
+  background: #fff;
+}
+
+.receipt-meta-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
 }
 
 /* ---------- Steps ---------- */
@@ -979,3 +1033,324 @@ legend {
   .transfer > :last-child { grid-column: 1 / -1; }
   .bar-chart { gap: var(--sp-1); }
 }
+
+/* ---------- Confirm dialog (<dialog>) ---------- */
+dialog.confirm-dialog {
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  max-width: 440px;
+  width: calc(100% - 2rem);
+  margin: auto;
+}
+
+dialog.confirm-dialog::backdrop {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: var(--blur);
+}
+
+.confirm-dialog-content {
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.confirm-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.confirm-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.confirm-dialog-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.confirm-dialog-desc {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+/* ---------- Toast notifications ---------- */
+.toast-container {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-6);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-width: min(400px, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  animation: toast-in var(--dur) var(--ease);
+}
+
+.toast-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon { color: var(--success-ink); }
+.toast-danger .toast-icon { color: var(--danger-ink); }
+.toast-warning .toast-icon { color: var(--warning-ink); }
+.toast-info .toast-icon { color: var(--info-ink); }
+
+.toast-msg {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: var(--sp-1);
+  font-size: 0.875rem;
+  border-radius: var(--radius-xs);
+  display: grid;
+  place-items: center;
+  transition: color var(--dur) var(--ease);
+}
+
+.toast-close:hover {
+  color: var(--text);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast.toast-exit {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+/* ---------- Global Search Dropdown (Review 2, Step P6) ---------- */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  width: min(380px, 90vw);
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 120;
+  padding: var(--sp-2);
+}
+
+.search-section-header {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
+}
+
+.search-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+
+.search-option:hover,
+.search-option.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.search-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.search-option-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-option-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.search-empty {
+  padding: var(--sp-6) var(--sp-4);
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+/* ---------- Notifications Dropdown (Review 2, Step P6) ---------- */
+.notifications-dropdown {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  right: 0;
+  width: min(380px, 92vw);
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 120;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-header h3 {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  margin: 0;
+}
+
+.notif-list {
+  overflow-y: auto;
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  list-style: none;
+}
+
+.notif-item {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  transition: background var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.notif-item.is-read {
+  background: transparent;
+  opacity: 0.75;
+}
+
+.notif-item:hover {
+  background: var(--surface-3);
+  opacity: 1;
+}
+
+.notif-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-xs);
+}
+
+.notif-icon.tone-danger { background: var(--danger-soft); color: var(--danger-ink); }
+.notif-icon.tone-warning { background: var(--warning-soft); color: var(--warning-ink); }
+.notif-icon.tone-info { background: var(--info-soft); color: var(--info-ink); }
+.notif-icon.tone-success { background: var(--success-soft); color: var(--success-ink); }
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.notif-msg {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.notif-empty {
+  padding: var(--sp-8) var(--sp-4);
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+
